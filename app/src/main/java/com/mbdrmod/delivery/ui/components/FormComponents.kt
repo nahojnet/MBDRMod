@@ -1,10 +1,6 @@
 package com.mbdrmod.delivery.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -192,14 +188,6 @@ fun FormTimeField(
     val hours = (0..23).toList()
     val minutes = (0..59).toList()
 
-    // Scroll states for inertia effect
-    val hoursScrollState = rememberLazyListState(
-        initialFirstVisibleItemIndex = currentHour ?: 0
-    )
-    val minutesScrollState = rememberLazyListState(
-        initialFirstVisibleItemIndex = currentMinute ?: 0
-    )
-
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = if (isRequired) "$label *" else label,
@@ -214,46 +202,41 @@ fun FormTimeField(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Hours dropdown
-            Box(modifier = Modifier.weight(1f)) {
+            ExposedDropdownMenuBox(
+                expanded = hoursExpanded,
+                onExpandedChange = { hoursExpanded = it },
+                modifier = Modifier.weight(1f)
+            ) {
                 OutlinedTextField(
                     value = currentHour?.toString()?.padStart(2, '0') ?: "",
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Heures") },
+                    label = { Text("Heure") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = hoursExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { hoursExpanded = true },
+                        .menuAnchor(),
                     isError = isError,
                     singleLine = true
                 )
-                DropdownMenu(
+                ExposedDropdownMenu(
                     expanded = hoursExpanded,
-                    onDismissRequest = { hoursExpanded = false },
-                    modifier = Modifier.heightIn(max = 250.dp)
+                    onDismissRequest = { hoursExpanded = false }
                 ) {
-                    LazyColumn(
-                        state = hoursScrollState,
-                        modifier = Modifier
-                            .width(120.dp)
-                            .heightIn(max = 250.dp),
-                        flingBehavior = androidx.compose.foundation.gestures.ScrollableDefaults.flingBehavior()
-                    ) {
-                        items(hours) { hour ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = hour.toString().padStart(2, '0'),
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                },
-                                onClick = {
-                                    val newMinute = currentMinute ?: 0
-                                    onValueChange("${hour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}")
-                                    hoursExpanded = false
-                                }
-                            )
-                        }
+                    hours.forEach { hour ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = hour.toString().padStart(2, '0'),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            },
+                            onClick = {
+                                val newMinute = currentMinute ?: 0
+                                onValueChange("${hour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}")
+                                hoursExpanded = false
+                            }
+                        )
                     }
                 }
             }
@@ -264,46 +247,41 @@ fun FormTimeField(
             )
 
             // Minutes dropdown
-            Box(modifier = Modifier.weight(1f)) {
+            ExposedDropdownMenuBox(
+                expanded = minutesExpanded,
+                onExpandedChange = { minutesExpanded = it },
+                modifier = Modifier.weight(1f)
+            ) {
                 OutlinedTextField(
                     value = currentMinute?.toString()?.padStart(2, '0') ?: "",
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Minutes") },
+                    label = { Text("Minute") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = minutesExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { minutesExpanded = true },
+                        .menuAnchor(),
                     isError = isError,
                     singleLine = true
                 )
-                DropdownMenu(
+                ExposedDropdownMenu(
                     expanded = minutesExpanded,
-                    onDismissRequest = { minutesExpanded = false },
-                    modifier = Modifier.heightIn(max = 250.dp)
+                    onDismissRequest = { minutesExpanded = false }
                 ) {
-                    LazyColumn(
-                        state = minutesScrollState,
-                        modifier = Modifier
-                            .width(120.dp)
-                            .heightIn(max = 250.dp),
-                        flingBehavior = androidx.compose.foundation.gestures.ScrollableDefaults.flingBehavior()
-                    ) {
-                        items(minutes) { minute ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = minute.toString().padStart(2, '0'),
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                },
-                                onClick = {
-                                    val newHour = currentHour ?: 0
-                                    onValueChange("${newHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}")
-                                    minutesExpanded = false
-                                }
-                            )
-                        }
+                    minutes.forEach { minute ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = minute.toString().padStart(2, '0'),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            },
+                            onClick = {
+                                val newHour = currentHour ?: 0
+                                onValueChange("${newHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}")
+                                minutesExpanded = false
+                            }
+                        )
                     }
                 }
             }
