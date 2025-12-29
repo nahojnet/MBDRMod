@@ -129,22 +129,64 @@ fun FormTimeField(
     isRequired: Boolean = false,
     isError: Boolean = false
 ) {
+    var hasTimeError by remember { mutableStateOf(false) }
+
     FormTextField(
         label = "$label (HH:MM)",
         value = value,
         onValueChange = { newValue ->
-            // Format time as HH:MM
+            // Remove everything except digits
             val cleaned = newValue.filter { it.isDigit() }
+
+            // Format and validate time as HH:MM
             val formatted = when {
-                cleaned.length <= 2 -> cleaned
-                cleaned.length <= 4 -> "${cleaned.take(2)}:${cleaned.drop(2)}"
-                else -> "${cleaned.take(2)}:${cleaned.substring(2, 4)}"
+                cleaned.isEmpty() -> ""
+                cleaned.length == 1 -> cleaned
+                cleaned.length == 2 -> {
+                    val hours = cleaned.toIntOrNull() ?: 0
+                    if (hours <= 23) {
+                        "$cleaned:" // Auto-add ":" after 2 digits
+                    } else {
+                        // Invalid hours, keep only first digit
+                        cleaned.take(1)
+                    }
+                }
+                cleaned.length == 3 -> {
+                    val hours = cleaned.take(2).toIntOrNull() ?: 0
+                    if (hours <= 23) {
+                        "${cleaned.take(2)}:${cleaned.drop(2)}"
+                    } else {
+                        "${cleaned.take(1)}:"
+                    }
+                }
+                cleaned.length >= 4 -> {
+                    val hours = cleaned.take(2).toIntOrNull() ?: 0
+                    val minutes = cleaned.substring(2, 4).toIntOrNull() ?: 0
+                    when {
+                        hours > 23 -> "${cleaned.take(1)}:"
+                        minutes > 59 -> "${cleaned.take(2)}:${cleaned.substring(2, 3)}"
+                        else -> "${cleaned.take(2)}:${cleaned.substring(2, 4)}"
+                    }
+                }
+                else -> cleaned
             }
+
+            // Validate final format
+            hasTimeError = if (formatted.contains(":") && formatted.length == 5) {
+                val parts = formatted.split(":")
+                val hours = parts[0].toIntOrNull() ?: -1
+                val minutes = parts[1].toIntOrNull() ?: -1
+                hours !in 0..23 || minutes !in 0..59
+            } else {
+                false
+            }
+
             onValueChange(formatted)
         },
         modifier = modifier,
         isRequired = isRequired,
-        isError = isError,
+        isError = isError || hasTimeError,
+        errorMessage = if (hasTimeError) "Format invalide (00:00 - 23:59)" else "Ce champ est obligatoire",
         keyboardType = KeyboardType.Number
     )
 }
@@ -188,14 +230,62 @@ fun FormTemperatureField(
     isRequired: Boolean = false,
     isError: Boolean = false
 ) {
-    FormDecimalField(
-        label = "$label (°C)",
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier,
-        isRequired = isRequired,
-        isError = isError
-    )
+    // Track the text input separately to allow "-" at the start
+    var textValue by remember(value) {
+        mutableStateOf(value?.toString()?.replace(".", ",") ?: "")
+    }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = textValue,
+            onValueChange = { newValue ->
+                // Allow: digits, comma (French decimal), dot, and minus sign
+                val filtered = newValue.filter { it.isDigit() || it == ',' || it == '.' || it == '-' }
+
+                // Ensure minus is only at the beginning
+                val normalized = if (filtered.startsWith("-")) {
+                    "-" + filtered.drop(1).filter { it != '-' }
+                } else {
+                    filtered.filter { it != '-' }
+                }
+
+                // Only one decimal separator allowed
+                val parts = normalized.replace(".", ",").split(",")
+                val finalValue = if (parts.size > 2) {
+                    parts[0] + "," + parts.drop(1).joinToString("")
+                } else {
+                    normalized.replace(".", ",")
+                }
+
+                textValue = finalValue
+
+                // Convert to Double
+                if (finalValue.isEmpty() || finalValue == "-") {
+                    onValueChange(null)
+                } else {
+                    val doubleValue = finalValue.replace(",", ".").toDoubleOrNull()
+                    if (doubleValue != null) {
+                        onValueChange(doubleValue)
+                    }
+                }
+            },
+            label = {
+                Text(text = if (isRequired) "$label (°C) *" else "$label (°C)")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = isError,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            singleLine = true
+        )
+        if (isError) {
+            Text(
+                text = "Ce champ est obligatoire",
+                color = Error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
 }
 
 @Composable
