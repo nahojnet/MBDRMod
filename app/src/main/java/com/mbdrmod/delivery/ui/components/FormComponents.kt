@@ -6,7 +6,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.mbdrmod.delivery.ui.theme.Error
 import com.mbdrmod.delivery.ui.theme.TextSecondary
@@ -130,65 +132,91 @@ fun FormTimeField(
     isError: Boolean = false
 ) {
     var hasTimeError by remember { mutableStateOf(false) }
+    var textFieldValue by remember(value) {
+        mutableStateOf(TextFieldValue(text = value, selection = TextRange(value.length)))
+    }
 
-    FormTextField(
-        label = "$label (HH:MM)",
-        value = value,
-        onValueChange = { newValue ->
-            // Remove everything except digits
-            val cleaned = newValue.filter { it.isDigit() }
+    // Sync external value changes
+    LaunchedEffect(value) {
+        if (textFieldValue.text != value) {
+            textFieldValue = TextFieldValue(text = value, selection = TextRange(value.length))
+        }
+    }
 
-            // Format and validate time as HH:MM
-            val formatted = when {
-                cleaned.isEmpty() -> ""
-                cleaned.length == 1 -> cleaned
-                cleaned.length == 2 -> {
-                    val hours = cleaned.toIntOrNull() ?: 0
-                    if (hours <= 23) {
-                        "$cleaned:" // Auto-add ":" after 2 digits
-                    } else {
-                        // Invalid hours, keep only first digit
-                        cleaned.take(1)
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = textFieldValue,
+            onValueChange = { newTextFieldValue ->
+                val newValue = newTextFieldValue.text
+                // Remove everything except digits
+                val cleaned = newValue.filter { it.isDigit() }
+
+                // Format and validate time as HH:MM
+                val formatted = when {
+                    cleaned.isEmpty() -> ""
+                    cleaned.length == 1 -> cleaned
+                    cleaned.length == 2 -> {
+                        val hours = cleaned.toIntOrNull() ?: 0
+                        if (hours <= 23) {
+                            "$cleaned:" // Auto-add ":" after 2 digits
+                        } else {
+                            cleaned.take(1)
+                        }
                     }
-                }
-                cleaned.length == 3 -> {
-                    val hours = cleaned.take(2).toIntOrNull() ?: 0
-                    if (hours <= 23) {
-                        "${cleaned.take(2)}:${cleaned.drop(2)}"
-                    } else {
-                        "${cleaned.take(1)}:"
+                    cleaned.length == 3 -> {
+                        val hours = cleaned.take(2).toIntOrNull() ?: 0
+                        if (hours <= 23) {
+                            "${cleaned.take(2)}:${cleaned.drop(2)}"
+                        } else {
+                            "${cleaned.take(1)}:"
+                        }
                     }
-                }
-                cleaned.length >= 4 -> {
-                    val hours = cleaned.take(2).toIntOrNull() ?: 0
-                    val minutes = cleaned.substring(2, 4).toIntOrNull() ?: 0
-                    when {
-                        hours > 23 -> "${cleaned.take(1)}:"
-                        minutes > 59 -> "${cleaned.take(2)}:${cleaned.substring(2, 3)}"
-                        else -> "${cleaned.take(2)}:${cleaned.substring(2, 4)}"
+                    cleaned.length >= 4 -> {
+                        val hours = cleaned.take(2).toIntOrNull() ?: 0
+                        val minutes = cleaned.substring(2, 4).toIntOrNull() ?: 0
+                        when {
+                            hours > 23 -> "${cleaned.take(1)}:"
+                            minutes > 59 -> "${cleaned.take(2)}:${cleaned.substring(2, 3)}"
+                            else -> "${cleaned.take(2)}:${cleaned.substring(2, 4)}"
+                        }
                     }
+                    else -> cleaned
                 }
-                else -> cleaned
-            }
 
-            // Validate final format
-            hasTimeError = if (formatted.contains(":") && formatted.length == 5) {
-                val parts = formatted.split(":")
-                val hours = parts[0].toIntOrNull() ?: -1
-                val minutes = parts[1].toIntOrNull() ?: -1
-                hours !in 0..23 || minutes !in 0..59
-            } else {
-                false
-            }
+                // Validate final format
+                hasTimeError = if (formatted.contains(":") && formatted.length == 5) {
+                    val parts = formatted.split(":")
+                    val hours = parts[0].toIntOrNull() ?: -1
+                    val minutes = parts[1].toIntOrNull() ?: -1
+                    hours !in 0..23 || minutes !in 0..59
+                } else {
+                    false
+                }
 
-            onValueChange(formatted)
-        },
-        modifier = modifier,
-        isRequired = isRequired,
-        isError = isError || hasTimeError,
-        errorMessage = if (hasTimeError) "Format invalide (00:00 - 23:59)" else "Ce champ est obligatoire",
-        keyboardType = KeyboardType.Number
-    )
+                // Set cursor at the end
+                textFieldValue = TextFieldValue(
+                    text = formatted,
+                    selection = TextRange(formatted.length)
+                )
+                onValueChange(formatted)
+            },
+            label = {
+                Text(text = if (isRequired) "$label (HH:MM) *" else "$label (HH:MM)")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = isError || hasTimeError,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true
+        )
+        if (isError || hasTimeError) {
+            Text(
+                text = if (hasTimeError) "Format invalide (00:00 - 23:59)" else "Ce champ est obligatoire",
+                color = Error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
 }
 
 @Composable
