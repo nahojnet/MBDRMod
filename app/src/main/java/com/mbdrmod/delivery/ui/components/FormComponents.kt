@@ -6,9 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.mbdrmod.delivery.ui.theme.Error
 import com.mbdrmod.delivery.ui.theme.TextSecondary
@@ -122,6 +120,7 @@ fun FormDecimalField(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormTimeField(
     label: String,
@@ -131,86 +130,111 @@ fun FormTimeField(
     isRequired: Boolean = false,
     isError: Boolean = false
 ) {
-    var hasTimeError by remember { mutableStateOf(false) }
-    var textFieldValue by remember(value) {
-        mutableStateOf(TextFieldValue(text = value, selection = TextRange(value.length)))
-    }
+    // Parse current value
+    val parts = value.split(":")
+    val currentHour = parts.getOrNull(0)?.toIntOrNull()
+    val currentMinute = parts.getOrNull(1)?.toIntOrNull()
 
-    // Sync external value changes
-    LaunchedEffect(value) {
-        if (textFieldValue.text != value) {
-            textFieldValue = TextFieldValue(text = value, selection = TextRange(value.length))
-        }
-    }
+    var hoursExpanded by remember { mutableStateOf(false) }
+    var minutesExpanded by remember { mutableStateOf(false) }
+
+    val hours = (0..23).toList()
+    val minutes = (0..59).toList()
 
     Column(modifier = modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = textFieldValue,
-            onValueChange = { newTextFieldValue ->
-                val newValue = newTextFieldValue.text
-                // Remove everything except digits
-                val cleaned = newValue.filter { it.isDigit() }
-
-                // Format and validate time as HH:MM
-                val formatted = when {
-                    cleaned.isEmpty() -> ""
-                    cleaned.length == 1 -> cleaned
-                    cleaned.length == 2 -> {
-                        val hours = cleaned.toIntOrNull() ?: 0
-                        if (hours <= 23) {
-                            "$cleaned:" // Auto-add ":" after 2 digits
-                        } else {
-                            cleaned.take(1)
-                        }
-                    }
-                    cleaned.length == 3 -> {
-                        val hours = cleaned.take(2).toIntOrNull() ?: 0
-                        if (hours <= 23) {
-                            "${cleaned.take(2)}:${cleaned.drop(2)}"
-                        } else {
-                            "${cleaned.take(1)}:"
-                        }
-                    }
-                    cleaned.length >= 4 -> {
-                        val hours = cleaned.take(2).toIntOrNull() ?: 0
-                        val minutes = cleaned.substring(2, 4).toIntOrNull() ?: 0
-                        when {
-                            hours > 23 -> "${cleaned.take(1)}:"
-                            minutes > 59 -> "${cleaned.take(2)}:${cleaned.substring(2, 3)}"
-                            else -> "${cleaned.take(2)}:${cleaned.substring(2, 4)}"
-                        }
-                    }
-                    else -> cleaned
-                }
-
-                // Validate final format
-                hasTimeError = if (formatted.contains(":") && formatted.length == 5) {
-                    val parts = formatted.split(":")
-                    val hours = parts[0].toIntOrNull() ?: -1
-                    val minutes = parts[1].toIntOrNull() ?: -1
-                    hours !in 0..23 || minutes !in 0..59
-                } else {
-                    false
-                }
-
-                // Set cursor at the end
-                textFieldValue = TextFieldValue(
-                    text = formatted,
-                    selection = TextRange(formatted.length)
-                )
-                onValueChange(formatted)
-            },
-            label = {
-                Text(text = if (isRequired) "$label (HH:MM) *" else "$label (HH:MM)")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            isError = isError || hasTimeError,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true
+        Text(
+            text = if (isRequired) "$label *" else label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextSecondary,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
-        if (isError || hasTimeError) {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Hours dropdown
+            ExposedDropdownMenuBox(
+                expanded = hoursExpanded,
+                onExpandedChange = { hoursExpanded = it },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = currentHour?.toString()?.padStart(2, '0') ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Heures") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = hoursExpanded) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    isError = isError,
+                    singleLine = true
+                )
+                ExposedDropdownMenu(
+                    expanded = hoursExpanded,
+                    onDismissRequest = { hoursExpanded = false }
+                ) {
+                    hours.forEach { hour ->
+                        DropdownMenuItem(
+                            text = { Text(hour.toString().padStart(2, '0')) },
+                            onClick = {
+                                val newMinute = currentMinute ?: 0
+                                onValueChange("${hour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}")
+                                hoursExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        )
+                    }
+                }
+            }
+
             Text(
-                text = if (hasTimeError) "Format invalide (00:00 - 23:59)" else "Ce champ est obligatoire",
+                text = ":",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            // Minutes dropdown
+            ExposedDropdownMenuBox(
+                expanded = minutesExpanded,
+                onExpandedChange = { minutesExpanded = it },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = currentMinute?.toString()?.padStart(2, '0') ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Minutes") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = minutesExpanded) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    isError = isError,
+                    singleLine = true
+                )
+                ExposedDropdownMenu(
+                    expanded = minutesExpanded,
+                    onDismissRequest = { minutesExpanded = false }
+                ) {
+                    minutes.forEach { minute ->
+                        DropdownMenuItem(
+                            text = { Text(minute.toString().padStart(2, '0')) },
+                            onClick = {
+                                val newHour = currentHour ?: 0
+                                onValueChange("${newHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}")
+                                minutesExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        )
+                    }
+                }
+            }
+        }
+
+        if (isError) {
+            Text(
+                text = "Ce champ est obligatoire",
                 color = Error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
