@@ -23,9 +23,20 @@ android {
         }
     }
 
+    signingConfigs {
+        getByName("debug") {
+            // Uses default debug keystore
+        }
+    }
+
     buildTypes {
+        debug {
+            isDebuggable = true
+        }
         release {
             isMinifyEnabled = false
+            // Use debug signing for testing - replace with production keystore for store release
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
