@@ -1,6 +1,10 @@
 package com.mbdrmod.delivery.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -98,26 +102,73 @@ fun FormDecimalField(
     isRequired: Boolean = false,
     isError: Boolean = false
 ) {
-    // Convert to French decimal format (comma as separator)
-    val displayValue = value?.toString()?.replace(".", ",") ?: ""
+    // Track the text input separately to allow free typing
+    var textValue by remember { mutableStateOf("") }
 
-    FormTextField(
-        label = label,
-        value = displayValue,
-        onValueChange = { newValue ->
-            if (newValue.isEmpty()) {
-                onValueChange(null)
+    // Initialize text value from Double only once or when value becomes non-null from null
+    LaunchedEffect(value) {
+        if (value != null && textValue.isEmpty()) {
+            // Only set initial value, don't override user input
+            val formatted = if (value == value.toLong().toDouble()) {
+                value.toLong().toString()
             } else {
-                // Convert French format (comma) to standard format (dot)
-                val normalizedValue = newValue.replace(",", ".")
-                normalizedValue.toDoubleOrNull()?.let { onValueChange(it) }
+                value.toString().replace(".", ",")
             }
-        },
-        modifier = modifier,
-        isRequired = isRequired,
-        isError = isError,
-        keyboardType = KeyboardType.Decimal
-    )
+            textValue = formatted
+        } else if (value == null && textValue.isNotEmpty()) {
+            // Value was cleared externally
+            val parsed = textValue.replace(",", ".").toDoubleOrNull()
+            if (parsed == null) {
+                textValue = ""
+            }
+        }
+    }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = textValue,
+            onValueChange = { newValue ->
+                // Allow: digits, comma (French decimal), and dot
+                val filtered = newValue.filter { it.isDigit() || it == ',' || it == '.' }
+
+                // Only one decimal separator allowed
+                val normalized = filtered.replace(".", ",")
+                val parts = normalized.split(",")
+                val finalValue = if (parts.size > 2) {
+                    parts[0] + "," + parts.drop(1).joinToString("")
+                } else {
+                    normalized
+                }
+
+                textValue = finalValue
+
+                // Convert to Double
+                if (finalValue.isEmpty()) {
+                    onValueChange(null)
+                } else {
+                    val doubleValue = finalValue.replace(",", ".").toDoubleOrNull()
+                    if (doubleValue != null) {
+                        onValueChange(doubleValue)
+                    }
+                }
+            },
+            label = {
+                Text(text = if (isRequired) "$label *" else label)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = isError,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            singleLine = true
+        )
+        if (isError) {
+            Text(
+                text = "Ce champ est obligatoire",
+                color = Error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -141,6 +192,14 @@ fun FormTimeField(
     val hours = (0..23).toList()
     val minutes = (0..59).toList()
 
+    // Scroll states for inertia effect
+    val hoursScrollState = rememberLazyListState(
+        initialFirstVisibleItemIndex = currentHour ?: 0
+    )
+    val minutesScrollState = rememberLazyListState(
+        initialFirstVisibleItemIndex = currentMinute ?: 0
+    )
+
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = if (isRequired) "$label *" else label,
@@ -155,11 +214,7 @@ fun FormTimeField(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Hours dropdown
-            ExposedDropdownMenuBox(
-                expanded = hoursExpanded,
-                onExpandedChange = { hoursExpanded = it },
-                modifier = Modifier.weight(1f)
-            ) {
+            Box(modifier = Modifier.weight(1f)) {
                 OutlinedTextField(
                     value = currentHour?.toString()?.padStart(2, '0') ?: "",
                     onValueChange = {},
@@ -167,25 +222,38 @@ fun FormTimeField(
                     label = { Text("Heures") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = hoursExpanded) },
                     modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .clickable { hoursExpanded = true },
                     isError = isError,
                     singleLine = true
                 )
-                ExposedDropdownMenu(
+                DropdownMenu(
                     expanded = hoursExpanded,
-                    onDismissRequest = { hoursExpanded = false }
+                    onDismissRequest = { hoursExpanded = false },
+                    modifier = Modifier.heightIn(max = 250.dp)
                 ) {
-                    hours.forEach { hour ->
-                        DropdownMenuItem(
-                            text = { Text(hour.toString().padStart(2, '0')) },
-                            onClick = {
-                                val newMinute = currentMinute ?: 0
-                                onValueChange("${hour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}")
-                                hoursExpanded = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
-                        )
+                    LazyColumn(
+                        state = hoursScrollState,
+                        modifier = Modifier
+                            .width(120.dp)
+                            .heightIn(max = 250.dp),
+                        flingBehavior = androidx.compose.foundation.gestures.ScrollableDefaults.flingBehavior()
+                    ) {
+                        items(hours) { hour ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = hour.toString().padStart(2, '0'),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                },
+                                onClick = {
+                                    val newMinute = currentMinute ?: 0
+                                    onValueChange("${hour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}")
+                                    hoursExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -196,11 +264,7 @@ fun FormTimeField(
             )
 
             // Minutes dropdown
-            ExposedDropdownMenuBox(
-                expanded = minutesExpanded,
-                onExpandedChange = { minutesExpanded = it },
-                modifier = Modifier.weight(1f)
-            ) {
+            Box(modifier = Modifier.weight(1f)) {
                 OutlinedTextField(
                     value = currentMinute?.toString()?.padStart(2, '0') ?: "",
                     onValueChange = {},
@@ -208,25 +272,38 @@ fun FormTimeField(
                     label = { Text("Minutes") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = minutesExpanded) },
                     modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .clickable { minutesExpanded = true },
                     isError = isError,
                     singleLine = true
                 )
-                ExposedDropdownMenu(
+                DropdownMenu(
                     expanded = minutesExpanded,
-                    onDismissRequest = { minutesExpanded = false }
+                    onDismissRequest = { minutesExpanded = false },
+                    modifier = Modifier.heightIn(max = 250.dp)
                 ) {
-                    minutes.forEach { minute ->
-                        DropdownMenuItem(
-                            text = { Text(minute.toString().padStart(2, '0')) },
-                            onClick = {
-                                val newHour = currentHour ?: 0
-                                onValueChange("${newHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}")
-                                minutesExpanded = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
-                        )
+                    LazyColumn(
+                        state = minutesScrollState,
+                        modifier = Modifier
+                            .width(120.dp)
+                            .heightIn(max = 250.dp),
+                        flingBehavior = androidx.compose.foundation.gestures.ScrollableDefaults.flingBehavior()
+                    ) {
+                        items(minutes) { minute ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = minute.toString().padStart(2, '0'),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                },
+                                onClick = {
+                                    val newHour = currentHour ?: 0
+                                    onValueChange("${newHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}")
+                                    minutesExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -282,9 +359,24 @@ fun FormTemperatureField(
     isRequired: Boolean = false,
     isError: Boolean = false
 ) {
-    // Track the text input separately to allow "-" at the start
-    var textValue by remember(value) {
-        mutableStateOf(value?.toString()?.replace(".", ",") ?: "")
+    // Track the text input separately to allow "-" at the start and free typing
+    var textValue by remember { mutableStateOf("") }
+
+    // Initialize text value from Double only once
+    LaunchedEffect(value) {
+        if (value != null && textValue.isEmpty()) {
+            val formatted = if (value == value.toLong().toDouble()) {
+                value.toLong().toString()
+            } else {
+                value.toString().replace(".", ",")
+            }
+            textValue = formatted
+        } else if (value == null && textValue.isNotEmpty()) {
+            val parsed = textValue.replace(",", ".").toDoubleOrNull()
+            if (parsed == null) {
+                textValue = ""
+            }
+        }
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -295,18 +387,19 @@ fun FormTemperatureField(
                 val filtered = newValue.filter { it.isDigit() || it == ',' || it == '.' || it == '-' }
 
                 // Ensure minus is only at the beginning
-                val normalized = if (filtered.startsWith("-")) {
+                val withMinus = if (filtered.startsWith("-")) {
                     "-" + filtered.drop(1).filter { it != '-' }
                 } else {
                     filtered.filter { it != '-' }
                 }
 
                 // Only one decimal separator allowed
-                val parts = normalized.replace(".", ",").split(",")
+                val normalized = withMinus.replace(".", ",")
+                val parts = normalized.split(",")
                 val finalValue = if (parts.size > 2) {
                     parts[0] + "," + parts.drop(1).joinToString("")
                 } else {
-                    normalized.replace(".", ",")
+                    normalized
                 }
 
                 textValue = finalValue
