@@ -56,6 +56,7 @@ fun MainScreen(
             deliveries = deliveries,
             onNewDelivery = { viewModel.startNewDelivery() },
             onResendDelivery = { delivery -> viewModel.resendDelivery(delivery) },
+            onDeleteDelivery = { delivery -> viewModel.deleteDelivery(delivery.id) },
             onEditDelivery = { delivery -> viewModel.editDelivery(delivery) }
         )
     }

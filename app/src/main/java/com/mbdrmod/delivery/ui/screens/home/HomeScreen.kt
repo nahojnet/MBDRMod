@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Schedule
@@ -29,6 +30,7 @@ fun HomeScreen(
     deliveries: List<DeliveryData>,
     onNewDelivery: () -> Unit,
     onResendDelivery: (DeliveryData) -> Unit,
+    onDeleteDelivery: (DeliveryData) -> Unit,
     onEditDelivery: (DeliveryData) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -90,6 +92,7 @@ fun HomeScreen(
                         DeliveryListItem(
                             delivery = delivery,
                             onResend = { onResendDelivery(delivery) },
+                            onDelete = { onDeleteDelivery(delivery) },
                             onClick = { onEditDelivery(delivery) }
                         )
                     }
@@ -104,11 +107,63 @@ fun HomeScreen(
 fun DeliveryListItem(
     delivery: DeliveryData,
     onResend: () -> Unit,
+    onDelete: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     val createdDate = dateFormat.format(Date(delivery.createdAt))
+
+    var showResendConfirmation by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+
+    // Resend confirmation dialog (only for already sent items)
+    if (showResendConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showResendConfirmation = false },
+            title = { Text("Confirmer le renvoi") },
+            text = { Text("Cette livraison a déjà été envoyée. Voulez-vous vraiment la renvoyer ?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showResendConfirmation = false
+                        onResend()
+                    }
+                ) {
+                    Text("Renvoyer")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResendConfirmation = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
+    }
+
+    // Delete confirmation dialog (only for not sent items - error or pending)
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Confirmer la suppression") },
+            text = { Text("Cette livraison n'a pas été envoyée. Voulez-vous vraiment la supprimer ? Les données seront perdues.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        onDelete()
+                    }
+                ) {
+                    Text("Supprimer", color = Error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
+    }
 
     Card(
         onClick = onClick,
@@ -118,7 +173,7 @@ fun DeliveryListItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Status icon
@@ -131,7 +186,7 @@ fun DeliveryListItem(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconColor,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(28.dp)
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -151,25 +206,45 @@ fun DeliveryListItem(
                 )
                 Text(
                     text = "Livraison: ${delivery.deliveryDate.ifEmpty { "-" }}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "Créé: $createdDate",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            // Resend button (only for failed or pending)
-            if (delivery.sendStatus != SendStatus.SENT) {
-                IconButton(onClick = onResend) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Renvoyer",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+            // Resend button
+            IconButton(
+                onClick = {
+                    if (delivery.sendStatus == SendStatus.SENT) {
+                        showResendConfirmation = true
+                    } else {
+                        onResend()
+                    }
                 }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Renvoyer",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            // Delete button
+            IconButton(
+                onClick = {
+                    if (delivery.sendStatus != SendStatus.SENT) {
+                        // Not sent yet - ask for confirmation
+                        showDeleteConfirmation = true
+                    } else {
+                        // Already sent - delete directly
+                        onDelete()
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Supprimer",
+                    tint = Error
+                )
             }
         }
     }
