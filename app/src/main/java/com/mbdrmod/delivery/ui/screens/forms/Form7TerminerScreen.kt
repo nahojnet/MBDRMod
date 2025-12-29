@@ -1,8 +1,9 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,6 +22,23 @@ fun Form7TerminerScreen(
     onFinish: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showErrors by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+
+    // Validation functions
+    fun isDeliveryEndTimeValid() = !requiredFields.deliveryEndTime || delivery.deliveryEndTime.isNotBlank()
+    fun isDepartureTimeValid() = !requiredFields.departureTime || delivery.departureTime.isNotBlank()
+    fun isDriverNameValid() = !requiredFields.driverName || delivery.driverName.isNotBlank()
+    fun isManagerNameValid() = !requiredFields.managerName || delivery.managerName.isNotBlank()
+
+    fun validateAndFinish() {
+        showErrors = true
+        if (isDeliveryEndTimeValid() && isDepartureTimeValid() &&
+            isDriverNameValid() && isManagerNameValid()) {
+            onFinish()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -32,63 +50,71 @@ fun Form7TerminerScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
+            state = listState,
+            flingBehavior = ScrollableDefaults.flingBehavior(),
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            FormCard {
-                SectionHeader("Fin de livraison")
+            item {
+                FormCard {
+                    SectionHeader("Fin de livraison")
 
-                FormTimeField(
-                    label = "Heure de fin de livraison",
-                    value = delivery.deliveryEndTime,
-                    onValueChange = { onUpdate(delivery.copy(deliveryEndTime = it)) },
-                    isRequired = requiredFields.deliveryEndTime
-                )
+                    FormTimeField(
+                        label = "Heure de fin de livraison",
+                        value = delivery.deliveryEndTime,
+                        onValueChange = { onUpdate(delivery.copy(deliveryEndTime = it)) },
+                        isRequired = requiredFields.deliveryEndTime,
+                        isError = showErrors && !isDeliveryEndTimeValid()
+                    )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                FormTimeField(
-                    label = "Heure de départ",
-                    value = delivery.departureTime,
-                    onValueChange = { onUpdate(delivery.copy(departureTime = it)) },
-                    isRequired = requiredFields.departureTime
-                )
+                    FormTimeField(
+                        label = "Heure de départ",
+                        value = delivery.departureTime,
+                        onValueChange = { onUpdate(delivery.copy(departureTime = it)) },
+                        isRequired = requiredFields.departureTime,
+                        isError = showErrors && !isDepartureTimeValid()
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            item {
+                FormCard {
+                    SectionHeader("Signatures")
 
-            FormCard {
-                SectionHeader("Signatures")
+                    FormTextField(
+                        label = "Nom du conducteur",
+                        value = delivery.driverName,
+                        onValueChange = { onUpdate(delivery.copy(driverName = it)) },
+                        isRequired = requiredFields.driverName,
+                        isError = showErrors && !isDriverNameValid()
+                    )
 
-                FormTextField(
-                    label = "Nom du conducteur",
-                    value = delivery.driverName,
-                    onValueChange = { onUpdate(delivery.copy(driverName = it)) },
-                    isRequired = requiredFields.driverName
-                )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                FormTextField(
-                    label = "Nom du manager",
-                    value = delivery.managerName,
-                    onValueChange = { onUpdate(delivery.copy(managerName = it)) },
-                    isRequired = requiredFields.managerName
-                )
+                    FormTextField(
+                        label = "Nom du manager",
+                        value = delivery.managerName,
+                        onValueChange = { onUpdate(delivery.copy(managerName = it)) },
+                        isRequired = requiredFields.managerName,
+                        isError = showErrors && !isManagerNameValid()
+                    )
+                }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Navigation with finish button
-            FormNavigationButtons(
-                onPrevious = onPrevious,
-                onFinish = onFinish,
-                isLastForm = true
-            )
+            item {
+                FormNavigationButtons(
+                    onPrevious = onPrevious,
+                    onFinish = { validateAndFinish() },
+                    isLastForm = true
+                )
+            }
         }
     }
 }

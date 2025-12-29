@@ -1,8 +1,6 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -10,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import com.mbdrmod.delivery.data.model.DeliveryData
 import com.mbdrmod.delivery.data.model.Form6RequiredFields
 import com.mbdrmod.delivery.ui.components.*
+import com.mbdrmod.delivery.ui.theme.Error
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,6 +20,17 @@ fun Form6RemarquesScreen(
     onNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showErrors by remember { mutableStateOf(false) }
+
+    fun isRemarksValid() = !requiredFields.remarks || delivery.remarks.isNotBlank()
+
+    fun validateAndProceed() {
+        showErrors = true
+        if (isRemarksValid()) {
+            onNext()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -62,15 +72,25 @@ fun Form6RemarquesScreen(
                         onValueChange = { onUpdate(delivery.copy(remarks = it)) },
                         modifier = Modifier.fillMaxSize(),
                         placeholder = { Text("Saisissez vos remarques ici...") },
-                        maxLines = Int.MAX_VALUE
+                        maxLines = Int.MAX_VALUE,
+                        isError = showErrors && !isRemarksValid()
                     )
+
+                    if (showErrors && !isRemarksValid()) {
+                        Text(
+                            text = "Ce champ est obligatoire",
+                            color = Error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
                 }
             }
 
             // Navigation
             FormNavigationButtons(
                 onPrevious = onPrevious,
-                onNext = onNext
+                onNext = { validateAndProceed() }
             )
         }
     }

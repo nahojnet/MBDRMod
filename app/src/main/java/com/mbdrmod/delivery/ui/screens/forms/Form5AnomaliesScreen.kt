@@ -1,8 +1,10 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -30,6 +32,8 @@ fun Form5AnomaliesScreen(
     onNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val listState = rememberLazyListState()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -49,41 +53,45 @@ fun Form5AnomaliesScreen(
             }
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
+            state = listState,
+            flingBehavior = ScrollableDefaults.flingBehavior(),
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             if (delivery.anomalies.isEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Aucune anomalie",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Appuyez sur + pour ajouter une anomalie",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Aucune anomalie",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Appuyez sur + pour ajouter une anomalie",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
             } else {
-                delivery.anomalies.forEachIndexed { index, anomaly ->
+                itemsIndexed(delivery.anomalies, key = { _, anomaly -> anomaly.id }) { index, anomaly ->
                     AnomalyCard(
                         anomaly = anomaly,
                         index = index + 1,
@@ -91,17 +99,20 @@ fun Form5AnomaliesScreen(
                         onUpdate = { update -> onUpdateAnomaly(anomaly.id, update) },
                         onRemove = { onRemoveAnomaly(anomaly.id) }
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(80.dp)) // Space for FAB
+            item {
+                Spacer(modifier = Modifier.height(80.dp)) // Space for FAB
+            }
 
             // Navigation
-            FormNavigationButtons(
-                onPrevious = onPrevious,
-                onNext = onNext
-            )
+            item {
+                FormNavigationButtons(
+                    onPrevious = onPrevious,
+                    onNext = onNext
+                )
+            }
         }
     }
 }

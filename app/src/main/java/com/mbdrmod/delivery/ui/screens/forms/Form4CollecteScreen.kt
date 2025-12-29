@@ -1,8 +1,9 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,6 +22,21 @@ fun Form4CollecteScreen(
     onNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showErrors by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+
+    // Validation functions
+    fun isPlasticFilmsValid() = !requiredFields.plasticFilms || delivery.plasticFilms != null
+    fun isCardboardValid() = !requiredFields.cardboard || delivery.cardboard != null
+    fun isAluminumValid() = !requiredFields.aluminum || delivery.aluminum != null
+
+    fun validateAndProceed() {
+        showErrors = true
+        if (isPlasticFilmsValid() && isCardboardValid() && isAluminumValid()) {
+            onNext()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -32,49 +48,56 @@ fun Form4CollecteScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
+            state = listState,
+            flingBehavior = ScrollableDefaults.flingBehavior(),
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            FormCard {
-                SectionHeader("Collecte")
+            item {
+                FormCard {
+                    SectionHeader("Collecte")
 
-                FormNumberField(
-                    label = "Films Plastiques",
-                    value = delivery.plasticFilms,
-                    onValueChange = { onUpdate(delivery.copy(plasticFilms = it)) },
-                    isRequired = requiredFields.plasticFilms
-                )
+                    FormNumberField(
+                        label = "Films Plastiques",
+                        value = delivery.plasticFilms,
+                        onValueChange = { onUpdate(delivery.copy(plasticFilms = it)) },
+                        isRequired = requiredFields.plasticFilms,
+                        isError = showErrors && !isPlasticFilmsValid()
+                    )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                FormNumberField(
-                    label = "Cartons Collecte",
-                    value = delivery.cardboard,
-                    onValueChange = { onUpdate(delivery.copy(cardboard = it)) },
-                    isRequired = requiredFields.cardboard
-                )
+                    FormNumberField(
+                        label = "Cartons Collecte",
+                        value = delivery.cardboard,
+                        onValueChange = { onUpdate(delivery.copy(cardboard = it)) },
+                        isRequired = requiredFields.cardboard,
+                        isError = showErrors && !isCardboardValid()
+                    )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                FormNumberField(
-                    label = "Aluminium",
-                    value = delivery.aluminum,
-                    onValueChange = { onUpdate(delivery.copy(aluminum = it)) },
-                    isRequired = requiredFields.aluminum
-                )
+                    FormNumberField(
+                        label = "Aluminium",
+                        value = delivery.aluminum,
+                        onValueChange = { onUpdate(delivery.copy(aluminum = it)) },
+                        isRequired = requiredFields.aluminum,
+                        isError = showErrors && !isAluminumValid()
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Navigation
-            FormNavigationButtons(
-                onPrevious = onPrevious,
-                onNext = onNext
-            )
+            item {
+                FormNavigationButtons(
+                    onPrevious = onPrevious,
+                    onNext = { validateAndProceed() }
+                )
+            }
         }
     }
 }
