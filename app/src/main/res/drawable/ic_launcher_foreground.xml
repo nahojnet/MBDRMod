@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Delivery truck icon -->
+    <group
+        android:translateX="24"
+        android:translateY="24">
+        <!-- Truck body -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M20,8h-3V4H3v16h2c0,1.66 1.34,3 3,3s3,-1.34 3,-3h6c0,1.66 1.34,3 3,3s3,-1.34 3,-3h2v-8l-5,-4zM8,21c-0.55,0 -1,-0.45 -1,-1s0.45,-1 1,-1 1,0.45 1,1 -0.45,1 -1,1zM17,21c-0.55,0 -1,-0.45 -1,-1s0.45,-1 1,-1 1,0.45 1,1 -0.45,1 -1,1zM19,13v-2.5l3,2.5h-3z" />
+        <!-- Clipboard/document -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M35,30h20v30h-20z"
+            android:strokeWidth="2"
+            android:strokeColor="#FFFFFF" />
+        <path
+            android:fillColor="#1976D2"
+            android:pathData="M38,36h14M38,42h14M38,48h10"
+            android:strokeWidth="2"
+            android:strokeColor="#1976D2" />
+    </group>
+</vector>
