@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Livraison MBDR</string>
+
+    <!-- Navigation -->
+    <string name="btn_previous">Précédent</string>
+    <string name="btn_next">Suivant</string>
+    <string name="btn_finish">Terminer</string>
+    <string name="btn_new_entry">Nouvelle saisie</string>
+    <string name="btn_resend">Renvoyer</string>
+
+    <!-- Home screen -->
+    <string name="home_title">Livraisons</string>
+    <string name="no_deliveries">Aucune livraison enregistrée</string>
+
+    <!-- Form 1 - Livraison -->
+    <string name="form_delivery_title">Livraison</string>
+    <string name="section_client">Client</string>
+    <string name="field_delivery_date">Date de Livraison</string>
+    <string name="field_client_number">Numéro de client</string>
+    <string name="field_tour_number">Numéro de Tour</string>
+    <string name="section_schedule">Horaire</string>
+    <string name="field_expected_arrival">Heure prévue d\'arrivée</string>
+    <string name="field_actual_arrival">Heure réelle d\'arrivée</string>
+    <string name="field_delivery_start">Heure de début de Livraison</string>
+    <string name="section_quantity">Quantité</string>
+    <string name="field_supports">Supports</string>
+    <string name="field_weight_kg">Poids en Kg</string>
+    <string name="field_packages">Colis</string>
+    <string name="field_volume_m3">Volume en M3</string>
+
+    <!-- Form 2 - Température -->
+    <string name="form_temperature_title">Température</string>
+    <string name="section_vehicle">Véhicule</string>
+    <string name="section_products">Produits</string>
+    <string name="field_frozen">Surgelé</string>
+    <string name="field_fresh">Frais</string>
+    <string name="radio_inertia_probe">Sondes à inertie</string>
+    <string name="radio_manual_control">Contrôle manuel</string>
+
+    <!-- Form 3 - Supports de livraison -->
+    <string name="form_supports_title">Supports de livraison</string>
+    <string name="field_delivered">Livrées</string>
+    <string name="field_returned">Rendues</string>
+    <string name="support_dolies">Dolies</string>
+    <string name="support_half_pal">1/2 PAL</string>
+    <string name="support_europe">Europe</string>
+    <string name="support_others">Autres</string>
+    <string name="support_panieres">Panières</string>
+    <string name="support_megabib">MegaBib</string>
+
+    <!-- Form 4 - Collecte -->
+    <string name="form_collecte_title">Collecte</string>
+    <string name="field_plastic_films">Films Plastiques</string>
+    <string name="field_cardboard">Cartons Collecte</string>
+    <string name="field_aluminum">Aluminium</string>
+
+    <!-- Form 5 - Anomalies -->
+    <string name="form_anomalies_title">Anomalies</string>
+    <string name="field_wrin">WRIN</string>
+    <string name="field_description">Description</string>
+    <string name="field_quantity">Quantité</string>
+    <string name="field_missing">Manquant</string>
+    <string name="field_refused">Refus</string>
+    <string name="field_excess">Excédent</string>
+    <string name="field_reason">Motif</string>
+    <string name="btn_add_anomaly">Ajouter une anomalie</string>
+    <string name="btn_delete">Supprimer</string>
+    <string name="no_anomalies">Aucune anomalie</string>
+
+    <!-- Form 6 - Remarques -->
+    <string name="form_remarks_title">Remarques</string>
+    <string name="field_remarks_placeholder">Saisissez vos remarques ici...</string>
+
+    <!-- Form 7 - Terminer -->
+    <string name="form_finish_title">Terminer</string>
+    <string name="field_delivery_end">Heure de fin de livraison</string>
+    <string name="field_departure_time">Heure de départ</string>
+    <string name="field_driver_name">Nom du conducteur</string>
+    <string name="field_manager_name">Nom du manager</string>
+
+    <!-- Status -->
+    <string name="status_pending">En attente d\'envoi</string>
+    <string name="status_sent">Envoyé</string>
+    <string name="status_failed">Échec d\'envoi</string>
+
+    <!-- Messages -->
+    <string name="msg_saved">Données enregistrées</string>
+    <string name="msg_sent_success">Données envoyées avec succès</string>
+    <string name="msg_send_failed">Échec de l\'envoi, nouvelle tentative programmée</string>
+    <string name="msg_required_field">Ce champ est obligatoire</string>
+</resources>

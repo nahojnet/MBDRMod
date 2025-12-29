@@ -1,0 +1,66 @@
+{
+  "webhook": {
+    "url": "https://example.com/webhook",
+    "retryIntervalMinutes": 15,
+    "dataRetentionDays": 30
+  },
+  "requiredFields": {
+    "form1_livraison": {
+      "deliveryDate": true,
+      "clientNumber": true,
+      "tourNumber": true,
+      "expectedArrivalTime": false,
+      "actualArrivalTime": false,
+      "deliveryStartTime": false,
+      "supports": false,
+      "weightKg": false,
+      "packages": false,
+      "volumeM3": false
+    },
+    "form2_temperature": {
+      "vehicleFrozen": false,
+      "vehicleFresh": false,
+      "productFrozen": false,
+      "productFrozenMethod": false,
+      "productFresh": false,
+      "productFreshMethod": false
+    },
+    "form3_supports": {
+      "doliesDelivered": false,
+      "doliesReturned": false,
+      "halfPalDelivered": false,
+      "halfPalReturned": false,
+      "europeDelivered": false,
+      "europeReturned": false,
+      "othersDelivered": false,
+      "othersReturned": false,
+      "panieresDelivered": false,
+      "panieresReturned": false,
+      "megabibDelivered": false,
+      "megabibReturned": false
+    },
+    "form4_collecte": {
+      "plasticFilms": false,
+      "cardboard": false,
+      "aluminum": false
+    },
+    "form5_anomalies": {
+      "wrin": false,
+      "description": false,
+      "quantity": false,
+      "missing": false,
+      "refused": false,
+      "excess": false,
+      "reason": false
+    },
+    "form6_remarks": {
+      "remarks": false
+    },
+    "form7_finish": {
+      "deliveryEndTime": false,
+      "departureTime": false,
+      "driverName": true,
+      "managerName": false
+    }
+  }
+}
