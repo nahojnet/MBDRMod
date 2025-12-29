@@ -1,6 +1,5 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
-import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -48,16 +47,29 @@ fun Form7TerminerScreen(
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
+        },
+        bottomBar = {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shadowElevation = 8.dp
+            ) {
+                FormNavigationButtons(
+                    onPrevious = onPrevious,
+                    onFinish = { validateAndFinish() },
+                    isLastForm = true,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
         }
     ) { paddingValues ->
         LazyColumn(
             state = listState,
-            flingBehavior = ScrollableDefaults.flingBehavior(),
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             item {
                 FormCard {
@@ -105,15 +117,6 @@ fun Form7TerminerScreen(
                         isError = showErrors && !isManagerNameValid()
                     )
                 }
-            }
-
-            // Navigation with finish button
-            item {
-                FormNavigationButtons(
-                    onPrevious = onPrevious,
-                    onFinish = { validateAndFinish() },
-                    isLastForm = true
-                )
             }
         }
     }

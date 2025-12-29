@@ -40,6 +40,18 @@ fun Form6RemarquesScreen(
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
+        },
+        bottomBar = {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shadowElevation = 8.dp
+            ) {
+                FormNavigationButtons(
+                    onPrevious = onPrevious,
+                    onNext = { validateAndProceed() },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -86,12 +98,6 @@ fun Form6RemarquesScreen(
                     }
                 }
             }
-
-            // Navigation
-            FormNavigationButtons(
-                onPrevious = onPrevious,
-                onNext = { validateAndProceed() }
-            )
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
+import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,15 +42,28 @@ fun Form5AnomaliesScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                ),
+                actions = {
+                    IconButton(onClick = onAddAnomaly) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Ajouter une anomalie",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddAnomaly,
-                containerColor = MaterialTheme.colorScheme.primary
+        bottomBar = {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shadowElevation = 8.dp
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Ajouter une anomalie")
+                FormNavigationButtons(
+                    onPrevious = onPrevious,
+                    onNext = onNext,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
         }
     ) { paddingValues ->
@@ -59,8 +73,9 @@ fun Form5AnomaliesScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             if (delivery.anomalies.isEmpty()) {
                 item {
@@ -100,18 +115,6 @@ fun Form5AnomaliesScreen(
                         onRemove = { onRemoveAnomaly(anomaly.id) }
                     )
                 }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(80.dp)) // Space for FAB
-            }
-
-            // Navigation
-            item {
-                FormNavigationButtons(
-                    onPrevious = onPrevious,
-                    onNext = onNext
-                )
             }
         }
     }
