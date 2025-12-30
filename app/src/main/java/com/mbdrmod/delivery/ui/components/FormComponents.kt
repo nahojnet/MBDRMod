@@ -339,19 +339,21 @@ fun FormTemperatureField(
     isError: Boolean = false,
     isFrozen: Boolean = false // Default to "-" sign for frozen temperatures
 ) {
-    // Parse current value - default to 0 if null
-    val effectiveValue = value ?: 0.0
-    val currentSign = if (effectiveValue < 0) "-" else if (isFrozen && value == null) "-" else "+"
-    val absValue = kotlin.math.abs(effectiveValue)
-    val currentUnits = absValue.toInt()
-    val currentDecimal = ((absValue - absValue.toInt()) * 10).toInt()
+    // Track if user has explicitly set a value
+    val hasValue = value != null
+
+    // Parse current value
+    val currentSign = if (value != null && value < 0) "-" else if (isFrozen) "-" else "+"
+    val absValue = if (value != null) kotlin.math.abs(value) else 0.0
+    val currentUnits = if (hasValue) absValue.toInt() else null
+    val currentDecimal = if (hasValue) ((absValue - absValue.toInt()) * 10).toInt() else null
 
     var signExpanded by remember { mutableStateOf(false) }
     var unitsExpanded by remember { mutableStateOf(false) }
     var decimalExpanded by remember { mutableStateOf(false) }
 
-    // Track selected values - default to 0 if null
-    var selectedSign by remember(value) { mutableStateOf(currentSign) }
+    // Track selected values - null means not selected yet
+    var selectedSign by remember(value) { mutableStateOf(if (hasValue) currentSign else if (isFrozen) "-" else null) }
     var selectedUnits by remember(value) { mutableStateOf(currentUnits) }
     var selectedDecimal by remember(value) { mutableStateOf(currentDecimal) }
 
@@ -359,12 +361,17 @@ fun FormTemperatureField(
     val units = (0..25).toList()
     val decimals = (0..9).toList()
 
-    // Combine values into Double
+    // Combine values into Double - only when all values are selected
     fun updateValue() {
-        val decimal = selectedDecimal
-        val absTemp = selectedUnits + (decimal / 10.0)
-        val finalTemp = if (selectedSign == "-") -absTemp else absTemp
-        onValueChange(finalTemp)
+        val sign = selectedSign
+        val unitsVal = selectedUnits
+        val decimalVal = selectedDecimal
+
+        if (sign != null && unitsVal != null && decimalVal != null) {
+            val absTemp = unitsVal + (decimalVal / 10.0)
+            val finalTemp = if (sign == "-") -absTemp else absTemp
+            onValueChange(finalTemp)
+        }
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -387,9 +394,10 @@ fun FormTemperatureField(
                 modifier = Modifier.width(78.dp)
             ) {
                 OutlinedTextField(
-                    value = selectedSign,
+                    value = selectedSign ?: "",
                     onValueChange = {},
                     readOnly = true,
+                    placeholder = { Text(if (isFrozen) "-" else "+") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = signExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -406,6 +414,9 @@ fun FormTemperatureField(
                             text = { Text(sign) },
                             onClick = {
                                 selectedSign = sign
+                                // Auto-fill with defaults if not set
+                                if (selectedUnits == null) selectedUnits = 0
+                                if (selectedDecimal == null) selectedDecimal = 0
                                 signExpanded = false
                                 updateValue()
                             }
@@ -421,9 +432,10 @@ fun FormTemperatureField(
                 modifier = Modifier.width(89.dp)
             ) {
                 OutlinedTextField(
-                    value = selectedUnits.toString(),
+                    value = selectedUnits?.toString() ?: "",
                     onValueChange = {},
                     readOnly = true,
+                    placeholder = { Text("0") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitsExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -440,6 +452,9 @@ fun FormTemperatureField(
                             text = { Text(unit.toString()) },
                             onClick = {
                                 selectedUnits = unit
+                                // Auto-fill with defaults if not set
+                                if (selectedSign == null) selectedSign = if (isFrozen) "-" else "+"
+                                if (selectedDecimal == null) selectedDecimal = 0
                                 unitsExpanded = false
                                 updateValue()
                             }
@@ -460,9 +475,10 @@ fun FormTemperatureField(
                 modifier = Modifier.width(78.dp)
             ) {
                 OutlinedTextField(
-                    value = selectedDecimal.toString(),
+                    value = selectedDecimal?.toString() ?: "",
                     onValueChange = {},
                     readOnly = true,
+                    placeholder = { Text("0") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = decimalExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -479,6 +495,9 @@ fun FormTemperatureField(
                             text = { Text(decimal.toString()) },
                             onClick = {
                                 selectedDecimal = decimal
+                                // Auto-fill with defaults if not set
+                                if (selectedSign == null) selectedSign = if (isFrozen) "-" else "+"
+                                if (selectedUnits == null) selectedUnits = 0
                                 decimalExpanded = false
                                 updateValue()
                             }
