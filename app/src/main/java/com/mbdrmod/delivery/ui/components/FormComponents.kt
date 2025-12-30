@@ -384,7 +384,7 @@ fun FormTemperatureField(
             ExposedDropdownMenuBox(
                 expanded = signExpanded,
                 onExpandedChange = { signExpanded = it },
-                modifier = Modifier.width(80.dp)
+                modifier = Modifier.width(72.dp)
             ) {
                 OutlinedTextField(
                     value = selectedSign,
@@ -418,7 +418,7 @@ fun FormTemperatureField(
             ExposedDropdownMenuBox(
                 expanded = unitsExpanded,
                 onExpandedChange = { unitsExpanded = it },
-                modifier = Modifier.width(85.dp)
+                modifier = Modifier.width(95.dp)
             ) {
                 OutlinedTextField(
                     value = selectedUnits.toString(),
@@ -457,7 +457,7 @@ fun FormTemperatureField(
             ExposedDropdownMenuBox(
                 expanded = decimalExpanded,
                 onExpandedChange = { decimalExpanded = it },
-                modifier = Modifier.width(80.dp)
+                modifier = Modifier.width(72.dp)
             ) {
                 OutlinedTextField(
                     value = selectedDecimal.toString(),
