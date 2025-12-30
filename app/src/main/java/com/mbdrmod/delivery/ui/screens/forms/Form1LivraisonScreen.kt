@@ -1,8 +1,9 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
@@ -24,7 +25,7 @@ fun Form1LivraisonScreen(
     modifier: Modifier = Modifier
 ) {
     var showErrors by remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
+    val listState = rememberLazyListState()
 
     // Validation functions
     fun isDateValid() = !requiredFields.deliveryDate || delivery.deliveryDate.isNotBlank()
@@ -78,126 +79,130 @@ fun Form1LivraisonScreen(
             }
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
+            state = listState,
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            flingBehavior = ScrollableDefaults.flingBehavior()
         ) {
-            Spacer(modifier = Modifier.height(0.dp))
-
             // Section Client
-            FormCard {
-                SectionHeader("Client")
+            item {
+                FormCard {
+                    SectionHeader("Client")
 
-                FormDateField(
-                    label = "Date de Livraison",
-                    value = delivery.deliveryDate,
-                    onValueChange = { onUpdate(delivery.copy(deliveryDate = it)) },
-                    isRequired = requiredFields.deliveryDate,
-                    isError = showErrors && !isDateValid()
-                )
+                    FormDateField(
+                        label = "Date de Livraison",
+                        value = delivery.deliveryDate,
+                        onValueChange = { onUpdate(delivery.copy(deliveryDate = it)) },
+                        isRequired = requiredFields.deliveryDate,
+                        isError = showErrors && !isDateValid()
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                FormTextField(
-                    label = "Numéro de client",
-                    value = delivery.clientNumber,
-                    onValueChange = { onUpdate(delivery.copy(clientNumber = it)) },
-                    isRequired = requiredFields.clientNumber,
-                    isError = showErrors && !isClientNumberValid()
-                )
+                    FormTextField(
+                        label = "Numéro de client",
+                        value = delivery.clientNumber,
+                        onValueChange = { onUpdate(delivery.copy(clientNumber = it)) },
+                        isRequired = requiredFields.clientNumber,
+                        isError = showErrors && !isClientNumberValid()
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                FormNumberField(
-                    label = "Numéro de Tour",
-                    value = delivery.tourNumber,
-                    onValueChange = { onUpdate(delivery.copy(tourNumber = it)) },
-                    isRequired = requiredFields.tourNumber,
-                    isError = showErrors && !isTourNumberValid()
-                )
+                    FormNumberField(
+                        label = "Numéro de Tour",
+                        value = delivery.tourNumber,
+                        onValueChange = { onUpdate(delivery.copy(tourNumber = it)) },
+                        isRequired = requiredFields.tourNumber,
+                        isError = showErrors && !isTourNumberValid()
+                    )
+                }
             }
 
             // Section Horaire
-            FormCard {
-                SectionHeader("Horaire")
+            item {
+                FormCard {
+                    SectionHeader("Horaire")
 
-                FormTimeField(
-                    label = "Heure prévue d'arrivée",
-                    value = delivery.expectedArrivalTime,
-                    onValueChange = { onUpdate(delivery.copy(expectedArrivalTime = it)) },
-                    isRequired = requiredFields.expectedArrivalTime,
-                    isError = showErrors && !isExpectedArrivalValid()
-                )
+                    FormTimeField(
+                        label = "Heure prévue d'arrivée",
+                        value = delivery.expectedArrivalTime,
+                        onValueChange = { onUpdate(delivery.copy(expectedArrivalTime = it)) },
+                        isRequired = requiredFields.expectedArrivalTime,
+                        isError = showErrors && !isExpectedArrivalValid()
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                FormTimeField(
-                    label = "Heure réelle d'arrivée",
-                    value = delivery.actualArrivalTime,
-                    onValueChange = { onUpdate(delivery.copy(actualArrivalTime = it)) },
-                    isRequired = requiredFields.actualArrivalTime,
-                    isError = showErrors && !isActualArrivalValid()
-                )
+                    FormTimeField(
+                        label = "Heure réelle d'arrivée",
+                        value = delivery.actualArrivalTime,
+                        onValueChange = { onUpdate(delivery.copy(actualArrivalTime = it)) },
+                        isRequired = requiredFields.actualArrivalTime,
+                        isError = showErrors && !isActualArrivalValid()
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                FormTimeField(
-                    label = "Heure de début de Livraison",
-                    value = delivery.deliveryStartTime,
-                    onValueChange = { onUpdate(delivery.copy(deliveryStartTime = it)) },
-                    isRequired = requiredFields.deliveryStartTime,
-                    isError = showErrors && !isDeliveryStartValid()
-                )
+                    FormTimeField(
+                        label = "Heure de début de Livraison",
+                        value = delivery.deliveryStartTime,
+                        onValueChange = { onUpdate(delivery.copy(deliveryStartTime = it)) },
+                        isRequired = requiredFields.deliveryStartTime,
+                        isError = showErrors && !isDeliveryStartValid()
+                    )
+                }
             }
 
             // Section Quantité
-            FormCard {
-                SectionHeader("Quantité")
+            item {
+                FormCard {
+                    SectionHeader("Quantité")
 
-                FormNumberField(
-                    label = "Supports",
-                    value = delivery.supports,
-                    onValueChange = { onUpdate(delivery.copy(supports = it)) },
-                    isRequired = requiredFields.supports,
-                    isError = showErrors && !isSupportsValid()
-                )
+                    FormNumberField(
+                        label = "Supports",
+                        value = delivery.supports,
+                        onValueChange = { onUpdate(delivery.copy(supports = it)) },
+                        isRequired = requiredFields.supports,
+                        isError = showErrors && !isSupportsValid()
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                FormDecimalField(
-                    label = "Poids en Kg",
-                    value = delivery.weightKg,
-                    onValueChange = { onUpdate(delivery.copy(weightKg = it)) },
-                    isRequired = requiredFields.weightKg,
-                    isError = showErrors && !isWeightValid()
-                )
+                    FormDecimalField(
+                        label = "Poids en Kg",
+                        value = delivery.weightKg,
+                        onValueChange = { onUpdate(delivery.copy(weightKg = it)) },
+                        isRequired = requiredFields.weightKg,
+                        isError = showErrors && !isWeightValid()
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                FormNumberField(
-                    label = "Colis",
-                    value = delivery.packages,
-                    onValueChange = { onUpdate(delivery.copy(packages = it)) },
-                    isRequired = requiredFields.packages,
-                    isError = showErrors && !isPackagesValid()
-                )
+                    FormNumberField(
+                        label = "Colis",
+                        value = delivery.packages,
+                        onValueChange = { onUpdate(delivery.copy(packages = it)) },
+                        isRequired = requiredFields.packages,
+                        isError = showErrors && !isPackagesValid()
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                FormDecimalField(
-                    label = "Volume en M3",
-                    value = delivery.volumeM3,
-                    onValueChange = { onUpdate(delivery.copy(volumeM3 = it)) },
-                    isRequired = requiredFields.volumeM3,
-                    isError = showErrors && !isVolumeValid()
-                )
+                    FormDecimalField(
+                        label = "Volume en M3",
+                        value = delivery.volumeM3,
+                        onValueChange = { onUpdate(delivery.copy(volumeM3 = it)) },
+                        isRequired = requiredFields.volumeM3,
+                        isError = showErrors && !isVolumeValid()
+                    )
+                }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
