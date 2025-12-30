@@ -48,9 +48,6 @@
       "wrin": false,
       "description": false,
       "quantity": false,
-      "missing": false,
-      "refused": false,
-      "excess": false,
       "reason": false
     },
     "form6_remarks": {

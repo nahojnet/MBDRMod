@@ -176,55 +176,43 @@ private fun AnomalyCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                FormNumberField(
-                    label = "Quantité",
-                    value = anomaly.quantity,
-                    onValueChange = { newValue ->
-                        onUpdate { it.copy(quantity = newValue) }
-                    },
-                    modifier = Modifier.weight(1f),
-                    isRequired = requiredFields.quantity
-                )
-
-                FormNumberField(
-                    label = "Manquant",
-                    value = anomaly.missing,
-                    onValueChange = { newValue ->
-                        onUpdate { it.copy(missing = newValue) }
-                    },
-                    modifier = Modifier.weight(1f),
-                    isRequired = requiredFields.missing
-                )
-            }
+            FormNumberField(
+                label = "Quantité",
+                value = anomaly.quantity,
+                onValueChange = { newValue ->
+                    onUpdate { it.copy(quantity = newValue) }
+                },
+                isRequired = requiredFields.quantity
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                FormNumberField(
-                    label = "Refus",
-                    value = anomaly.refused,
-                    onValueChange = { newValue ->
-                        onUpdate { it.copy(refused = newValue) }
-                    },
-                    modifier = Modifier.weight(1f),
-                    isRequired = requiredFields.refused
+                FormCheckboxField(
+                    label = "Manquant",
+                    checked = anomaly.missing,
+                    onCheckedChange = { newValue ->
+                        onUpdate { it.copy(missing = newValue) }
+                    }
                 )
 
-                FormNumberField(
+                FormCheckboxField(
+                    label = "Refus",
+                    checked = anomaly.refused,
+                    onCheckedChange = { newValue ->
+                        onUpdate { it.copy(refused = newValue) }
+                    }
+                )
+
+                FormCheckboxField(
                     label = "Excédent",
-                    value = anomaly.excess,
-                    onValueChange = { newValue ->
+                    checked = anomaly.excess,
+                    onCheckedChange = { newValue ->
                         onUpdate { it.copy(excess = newValue) }
-                    },
-                    modifier = Modifier.weight(1f),
-                    isRequired = requiredFields.excess
+                    }
                 )
             }
 

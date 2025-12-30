@@ -68,9 +68,6 @@ data class Form5RequiredFields(
     val wrin: Boolean = false,
     val description: Boolean = false,
     val quantity: Boolean = false,
-    val missing: Boolean = false,
-    val refused: Boolean = false,
-    val excess: Boolean = false,
     val reason: Boolean = false
 )
 

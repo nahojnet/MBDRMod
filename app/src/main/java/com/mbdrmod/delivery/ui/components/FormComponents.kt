@@ -339,17 +339,18 @@ fun FormTemperatureField(
     isError: Boolean = false,
     isFrozen: Boolean = false // Default to "-" sign for frozen temperatures
 ) {
-    // Parse current value
-    val currentSign = if (value != null && value < 0) "-" else if (value != null) "+" else if (isFrozen) "-" else "+"
-    val absValue = value?.let { kotlin.math.abs(it) }
-    val currentUnits = absValue?.toInt()
-    val currentDecimal = absValue?.let { ((it - it.toInt()) * 10).toInt() }
+    // Parse current value - default to 0 if null
+    val effectiveValue = value ?: 0.0
+    val currentSign = if (effectiveValue < 0) "-" else if (isFrozen && value == null) "-" else "+"
+    val absValue = kotlin.math.abs(effectiveValue)
+    val currentUnits = absValue.toInt()
+    val currentDecimal = ((absValue - absValue.toInt()) * 10).toInt()
 
     var signExpanded by remember { mutableStateOf(false) }
     var unitsExpanded by remember { mutableStateOf(false) }
     var decimalExpanded by remember { mutableStateOf(false) }
 
-    // Track selected values
+    // Track selected values - default to 0 if null
     var selectedSign by remember(value) { mutableStateOf(currentSign) }
     var selectedUnits by remember(value) { mutableStateOf(currentUnits) }
     var selectedDecimal by remember(value) { mutableStateOf(currentDecimal) }
@@ -360,12 +361,10 @@ fun FormTemperatureField(
 
     // Combine values into Double
     fun updateValue() {
-        if (selectedUnits != null) {
-            val decimal = selectedDecimal ?: 0
-            val absTemp = selectedUnits!! + (decimal / 10.0)
-            val finalTemp = if (selectedSign == "-") -absTemp else absTemp
-            onValueChange(finalTemp)
-        }
+        val decimal = selectedDecimal
+        val absTemp = selectedUnits + (decimal / 10.0)
+        val finalTemp = if (selectedSign == "-") -absTemp else absTemp
+        onValueChange(finalTemp)
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -378,20 +377,19 @@ fun FormTemperatureField(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Sign dropdown
             ExposedDropdownMenuBox(
                 expanded = signExpanded,
                 onExpandedChange = { signExpanded = it },
-                modifier = Modifier.width(70.dp)
+                modifier = Modifier.width(72.dp)
             ) {
                 OutlinedTextField(
                     value = selectedSign,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("±") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = signExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -423,10 +421,9 @@ fun FormTemperatureField(
                 modifier = Modifier.weight(1f)
             ) {
                 OutlinedTextField(
-                    value = selectedUnits?.toString() ?: "",
+                    value = selectedUnits.toString(),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Unité") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitsExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -463,10 +460,9 @@ fun FormTemperatureField(
                 modifier = Modifier.weight(1f)
             ) {
                 OutlinedTextField(
-                    value = selectedDecimal?.toString() ?: "0",
+                    value = selectedDecimal.toString(),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Déc.") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = decimalExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -540,6 +536,29 @@ fun FormRadioGroup(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun FormCheckboxField(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 

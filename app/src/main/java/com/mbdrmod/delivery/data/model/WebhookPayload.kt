@@ -165,13 +165,13 @@ data class AnomalyData(
     val quantite: Int?,
 
     @SerializedName("manquant")
-    val manquant: Int?,
+    val manquant: Boolean,
 
     @SerializedName("refus")
-    val refus: Int?,
+    val refus: Boolean,
 
     @SerializedName("excedent")
-    val excedent: Int?,
+    val excedent: Boolean,
 
     @SerializedName("motif")
     val motif: String

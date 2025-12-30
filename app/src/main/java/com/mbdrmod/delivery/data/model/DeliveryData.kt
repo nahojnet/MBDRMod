@@ -80,9 +80,9 @@ data class Anomaly(
     val wrin: String = "",
     val description: String = "",
     val quantity: Int? = null,
-    val missing: Int? = null,
-    val refused: Int? = null,
-    val excess: Int? = null,
+    val missing: Boolean = false,
+    val refused: Boolean = false,
+    val excess: Boolean = false,
     val reason: String = ""
 )
 
