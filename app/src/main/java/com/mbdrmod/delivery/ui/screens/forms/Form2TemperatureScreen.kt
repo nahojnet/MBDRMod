@@ -88,7 +88,8 @@ fun Form2TemperatureScreen(
                         value = delivery.vehicleFrozenTemp,
                         onValueChange = { onUpdate(delivery.copy(vehicleFrozenTemp = it)) },
                         isRequired = requiredFields.vehicleFrozen,
-                        isError = showErrors && !isVehicleFrozenValid()
+                        isError = showErrors && !isVehicleFrozenValid(),
+                        isFrozen = true
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -98,7 +99,8 @@ fun Form2TemperatureScreen(
                         value = delivery.vehicleFreshTemp,
                         onValueChange = { onUpdate(delivery.copy(vehicleFreshTemp = it)) },
                         isRequired = requiredFields.vehicleFresh,
-                        isError = showErrors && !isVehicleFreshValid()
+                        isError = showErrors && !isVehicleFreshValid(),
+                        isFrozen = false
                     )
                 }
             }
@@ -114,7 +116,8 @@ fun Form2TemperatureScreen(
                         value = delivery.productFrozenTemp,
                         onValueChange = { onUpdate(delivery.copy(productFrozenTemp = it)) },
                         isRequired = requiredFields.productFrozen,
-                        isError = showErrors && !isProductFrozenValid()
+                        isError = showErrors && !isProductFrozenValid(),
+                        isFrozen = true
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -137,7 +140,8 @@ fun Form2TemperatureScreen(
                         value = delivery.productFreshTemp,
                         onValueChange = { onUpdate(delivery.copy(productFreshTemp = it)) },
                         isRequired = requiredFields.productFresh,
-                        isError = showErrors && !isProductFreshValid()
+                        isError = showErrors && !isProductFreshValid(),
+                        isFrozen = false
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))

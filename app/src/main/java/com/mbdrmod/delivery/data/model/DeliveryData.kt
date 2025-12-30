@@ -70,7 +70,7 @@ data class DeliveryData(
 
     // Metadata
     val createdAt: Long = System.currentTimeMillis(),
-    val sendStatus: SendStatus = SendStatus.PENDING,
+    val sendStatus: SendStatus = SendStatus.DRAFT,
     val lastSendAttempt: Long? = null,
     val sentAt: Long? = null
 )
@@ -87,6 +87,7 @@ data class Anomaly(
 )
 
 enum class SendStatus {
+    DRAFT,
     PENDING,
     SENT,
     FAILED

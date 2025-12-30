@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -178,6 +179,7 @@ fun DeliveryListItem(
         ) {
             // Status icon
             val (icon, iconColor) = when (delivery.sendStatus) {
+                SendStatus.DRAFT -> Icons.Default.Edit to MaterialTheme.colorScheme.outline
                 SendStatus.SENT -> Icons.Default.CheckCircle to Success
                 SendStatus.FAILED -> Icons.Default.Error to Error
                 SendStatus.PENDING -> Icons.Default.Schedule to Warning
@@ -211,28 +213,30 @@ fun DeliveryListItem(
                 )
             }
 
-            // Resend button
-            IconButton(
-                onClick = {
-                    if (delivery.sendStatus == SendStatus.SENT) {
-                        showResendConfirmation = true
-                    } else {
-                        onResend()
+            // Resend button (hidden for drafts)
+            if (delivery.sendStatus != SendStatus.DRAFT) {
+                IconButton(
+                    onClick = {
+                        if (delivery.sendStatus == SendStatus.SENT) {
+                            showResendConfirmation = true
+                        } else {
+                            onResend()
+                        }
                     }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Renvoyer",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Renvoyer",
-                    tint = MaterialTheme.colorScheme.primary
-                )
             }
 
             // Delete button
             IconButton(
                 onClick = {
                     if (delivery.sendStatus != SendStatus.SENT) {
-                        // Not sent yet - ask for confirmation
+                        // Not sent yet (draft, pending, failed) - ask for confirmation
                         showDeleteConfirmation = true
                     } else {
                         // Already sent - delete directly

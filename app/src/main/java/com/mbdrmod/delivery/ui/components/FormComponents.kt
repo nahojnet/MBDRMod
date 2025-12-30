@@ -328,6 +328,7 @@ fun FormDateField(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormTemperatureField(
     label: String,
@@ -335,71 +336,167 @@ fun FormTemperatureField(
     onValueChange: (Double?) -> Unit,
     modifier: Modifier = Modifier,
     isRequired: Boolean = false,
-    isError: Boolean = false
+    isError: Boolean = false,
+    isFrozen: Boolean = false // Default to "-" sign for frozen temperatures
 ) {
-    // Track the text input separately to allow "-" at the start and free typing
-    var textValue by remember { mutableStateOf("") }
+    // Parse current value
+    val currentSign = if (value != null && value < 0) "-" else if (value != null) "+" else if (isFrozen) "-" else "+"
+    val absValue = value?.let { kotlin.math.abs(it) }
+    val currentUnits = absValue?.toInt()
+    val currentDecimal = absValue?.let { ((it - it.toInt()) * 10).toInt() }
 
-    // Initialize text value from Double only once
-    LaunchedEffect(value) {
-        if (value != null && textValue.isEmpty()) {
-            val formatted = if (value == value.toLong().toDouble()) {
-                value.toLong().toString()
-            } else {
-                value.toString().replace(".", ",")
-            }
-            textValue = formatted
-        } else if (value == null && textValue.isNotEmpty()) {
-            val parsed = textValue.replace(",", ".").toDoubleOrNull()
-            if (parsed == null) {
-                textValue = ""
-            }
+    var signExpanded by remember { mutableStateOf(false) }
+    var unitsExpanded by remember { mutableStateOf(false) }
+    var decimalExpanded by remember { mutableStateOf(false) }
+
+    // Track selected values
+    var selectedSign by remember(value) { mutableStateOf(currentSign) }
+    var selectedUnits by remember(value) { mutableStateOf(currentUnits) }
+    var selectedDecimal by remember(value) { mutableStateOf(currentDecimal) }
+
+    val signs = listOf("-", "+")
+    val units = (0..25).toList()
+    val decimals = (0..9).toList()
+
+    // Combine values into Double
+    fun updateValue() {
+        if (selectedUnits != null) {
+            val decimal = selectedDecimal ?: 0
+            val absTemp = selectedUnits!! + (decimal / 10.0)
+            val finalTemp = if (selectedSign == "-") -absTemp else absTemp
+            onValueChange(finalTemp)
         }
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = textValue,
-            onValueChange = { newValue ->
-                // Allow: digits, comma (French decimal), dot, and minus sign
-                val filtered = newValue.filter { it.isDigit() || it == ',' || it == '.' || it == '-' }
+        Text(
+            text = if (isRequired) "$label (°C) *" else "$label (°C)",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextSecondary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
-                // Ensure minus is only at the beginning
-                val withMinus = if (filtered.startsWith("-")) {
-                    "-" + filtered.drop(1).filter { it != '-' }
-                } else {
-                    filtered.filter { it != '-' }
-                }
-
-                // Only one decimal separator allowed
-                val normalized = withMinus.replace(".", ",")
-                val parts = normalized.split(",")
-                val finalValue = if (parts.size > 2) {
-                    parts[0] + "," + parts.drop(1).joinToString("")
-                } else {
-                    normalized
-                }
-
-                textValue = finalValue
-
-                // Convert to Double
-                if (finalValue.isEmpty() || finalValue == "-") {
-                    onValueChange(null)
-                } else {
-                    val doubleValue = finalValue.replace(",", ".").toDoubleOrNull()
-                    if (doubleValue != null) {
-                        onValueChange(doubleValue)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Sign dropdown
+            ExposedDropdownMenuBox(
+                expanded = signExpanded,
+                onExpandedChange = { signExpanded = it },
+                modifier = Modifier.width(70.dp)
+            ) {
+                OutlinedTextField(
+                    value = selectedSign,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("±") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = signExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    isError = isError,
+                    singleLine = true
+                )
+                ExposedDropdownMenu(
+                    expanded = signExpanded,
+                    onDismissRequest = { signExpanded = false }
+                ) {
+                    signs.forEach { sign ->
+                        DropdownMenuItem(
+                            text = { Text(sign) },
+                            onClick = {
+                                selectedSign = sign
+                                signExpanded = false
+                                updateValue()
+                            }
+                        )
                     }
                 }
-            },
-            label = {
-                Text(text = if (isRequired) "$label (°C) *" else "$label (°C)")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            isError = isError,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            singleLine = true
-        )
+            }
+
+            // Units dropdown (0-25)
+            ExposedDropdownMenuBox(
+                expanded = unitsExpanded,
+                onExpandedChange = { unitsExpanded = it },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = selectedUnits?.toString() ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Unité") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitsExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    isError = isError,
+                    singleLine = true
+                )
+                ExposedDropdownMenu(
+                    expanded = unitsExpanded,
+                    onDismissRequest = { unitsExpanded = false }
+                ) {
+                    units.forEach { unit ->
+                        DropdownMenuItem(
+                            text = { Text(unit.toString()) },
+                            onClick = {
+                                selectedUnits = unit
+                                unitsExpanded = false
+                                updateValue()
+                            }
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = ",",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            // Decimal dropdown (0-9)
+            ExposedDropdownMenuBox(
+                expanded = decimalExpanded,
+                onExpandedChange = { decimalExpanded = it },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = selectedDecimal?.toString() ?: "0",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Déc.") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = decimalExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    isError = isError,
+                    singleLine = true
+                )
+                ExposedDropdownMenu(
+                    expanded = decimalExpanded,
+                    onDismissRequest = { decimalExpanded = false }
+                ) {
+                    decimals.forEach { decimal ->
+                        DropdownMenuItem(
+                            text = { Text(decimal.toString()) },
+                            onClick = {
+                                selectedDecimal = decimal
+                                decimalExpanded = false
+                                updateValue()
+                            }
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = "°C",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+
         if (isError) {
             Text(
                 text = "Ce champ est obligatoire",

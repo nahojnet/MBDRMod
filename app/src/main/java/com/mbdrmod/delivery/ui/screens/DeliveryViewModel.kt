@@ -52,7 +52,8 @@ class DeliveryViewModel @Inject constructor(
     private fun createNewDelivery(): DeliveryData {
         val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
         return DeliveryData(
-            deliveryDate = dateFormat.format(Date())
+            deliveryDate = dateFormat.format(Date()),
+            sendStatus = SendStatus.DRAFT
         )
     }
 
@@ -69,6 +70,8 @@ class DeliveryViewModel @Inject constructor(
     }
 
     fun cancelEditing() {
+        // Save as draft before leaving
+        saveDraft()
         _isEditing.value = false
         _currentFormIndex.value = 0
     }
@@ -78,12 +81,16 @@ class DeliveryViewModel @Inject constructor(
     }
 
     fun nextForm() {
+        // Save draft when navigating between forms
+        saveDraft()
         if (_currentFormIndex.value < 6) { // 7 forms (0-6)
             _currentFormIndex.value++
         }
     }
 
     fun previousForm() {
+        // Save draft when navigating between forms
+        saveDraft()
         if (_currentFormIndex.value > 0) {
             _currentFormIndex.value--
         }
@@ -93,6 +100,50 @@ class DeliveryViewModel @Inject constructor(
         if (index in 0..6) {
             _currentFormIndex.value = index
         }
+    }
+
+    // Save current delivery as draft
+    private fun saveDraft() {
+        viewModelScope.launch {
+            val delivery = _currentDelivery.value
+            // Only save if there's some data entered
+            if (hasAnyData(delivery)) {
+                if (delivery.id == 0L) {
+                    // New delivery - save and update current with ID
+                    val id = repository.saveDelivery(delivery.copy(sendStatus = SendStatus.DRAFT))
+                    _currentDelivery.value = delivery.copy(id = id, sendStatus = SendStatus.DRAFT)
+                } else {
+                    // Existing delivery - update (keep current status if not SENT)
+                    val statusToKeep = if (delivery.sendStatus == SendStatus.SENT) {
+                        SendStatus.SENT
+                    } else {
+                        SendStatus.DRAFT
+                    }
+                    repository.updateDelivery(delivery.copy(sendStatus = statusToKeep))
+                }
+            }
+        }
+    }
+
+    // Check if delivery has any meaningful data
+    private fun hasAnyData(delivery: DeliveryData): Boolean {
+        return delivery.clientNumber.isNotBlank() ||
+                delivery.tourNumber != null ||
+                delivery.expectedArrivalTime.isNotBlank() ||
+                delivery.actualArrivalTime.isNotBlank() ||
+                delivery.deliveryStartTime.isNotBlank() ||
+                delivery.supports != null ||
+                delivery.weightKg != null ||
+                delivery.packages != null ||
+                delivery.volumeM3 != null ||
+                delivery.vehicleFrozenTemp != null ||
+                delivery.vehicleFreshTemp != null ||
+                delivery.productFrozenTemp != null ||
+                delivery.productFreshTemp != null ||
+                delivery.anomalies.isNotEmpty() ||
+                delivery.remarks.isNotBlank() ||
+                delivery.driverName.isNotBlank() ||
+                delivery.managerName.isNotBlank()
     }
 
     // Anomaly management
