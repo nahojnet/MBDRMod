@@ -1,5 +1,6 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -88,7 +89,8 @@ fun Form2TemperatureScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp)
+            contentPadding = PaddingValues(vertical = 16.dp),
+            flingBehavior = ScrollableDefaults.flingBehavior()
         ) {
             // Section Véhicule
             item {

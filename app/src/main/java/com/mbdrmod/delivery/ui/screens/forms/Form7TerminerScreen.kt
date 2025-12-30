@@ -1,5 +1,6 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -76,6 +77,7 @@ fun Form7TerminerScreen(
     ) { paddingValues ->
         LazyColumn(
             state = listState,
+            flingBehavior = ScrollableDefaults.flingBehavior(),
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
