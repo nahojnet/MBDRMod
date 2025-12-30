@@ -187,9 +187,10 @@ private fun AnomalyCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // First row: Manquant + Refus
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 FormCheckboxField(
                     label = "Manquant",
@@ -206,15 +207,16 @@ private fun AnomalyCard(
                         onUpdate { it.copy(refused = newValue) }
                     }
                 )
-
-                FormCheckboxField(
-                    label = "Excédent",
-                    checked = anomaly.excess,
-                    onCheckedChange = { newValue ->
-                        onUpdate { it.copy(excess = newValue) }
-                    }
-                )
             }
+
+            // Second row: Excédent
+            FormCheckboxField(
+                label = "Excédent",
+                checked = anomaly.excess,
+                onCheckedChange = { newValue ->
+                    onUpdate { it.copy(excess = newValue) }
+                }
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 

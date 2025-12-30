@@ -380,11 +380,11 @@ fun FormTemperatureField(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Sign dropdown
+            // Sign dropdown - larger to see the sign clearly
             ExposedDropdownMenuBox(
                 expanded = signExpanded,
                 onExpandedChange = { signExpanded = it },
-                modifier = Modifier.width(72.dp)
+                modifier = Modifier.width(90.dp)
             ) {
                 OutlinedTextField(
                     value = selectedSign,
@@ -453,11 +453,11 @@ fun FormTemperatureField(
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            // Decimal dropdown (0-9)
+            // Decimal dropdown (0-9) - smaller width
             ExposedDropdownMenuBox(
                 expanded = decimalExpanded,
                 onExpandedChange = { decimalExpanded = it },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.width(70.dp)
             ) {
                 OutlinedTextField(
                     value = selectedDecimal.toString(),
