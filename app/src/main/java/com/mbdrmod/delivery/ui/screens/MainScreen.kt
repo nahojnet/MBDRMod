@@ -49,7 +49,8 @@ fun MainScreen(
             onAddAnomaly = { viewModel.addAnomaly() },
             onUpdateAnomaly = { id, update -> viewModel.updateAnomaly(id, update) },
             onRemoveAnomaly = { id -> viewModel.removeAnomaly(id) },
-            onFinish = { viewModel.finishAndSend() }
+            onFinish = { viewModel.finishAndSend() },
+            onGoHome = { viewModel.goHome() }
         )
     } else {
         HomeScreen(

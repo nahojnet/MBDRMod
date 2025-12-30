@@ -16,35 +16,40 @@ fun FormContainerScreen(
     onAddAnomaly: () -> Unit,
     onUpdateAnomaly: (Long, (Anomaly) -> Anomaly) -> Unit,
     onRemoveAnomaly: (Long) -> Unit,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    onGoHome: () -> Unit
 ) {
     when (currentFormIndex) {
         0 -> Form1LivraisonScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form1_livraison,
             onUpdate = onUpdate,
-            onNext = onNextForm
+            onNext = onNextForm,
+            onGoHome = onGoHome
         )
         1 -> Form2TemperatureScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form2_temperature,
             onUpdate = onUpdate,
             onPrevious = onPreviousForm,
-            onNext = onNextForm
+            onNext = onNextForm,
+            onGoHome = onGoHome
         )
         2 -> Form3SupportsScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form3_supports,
             onUpdate = onUpdate,
             onPrevious = onPreviousForm,
-            onNext = onNextForm
+            onNext = onNextForm,
+            onGoHome = onGoHome
         )
         3 -> Form4CollecteScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form4_collecte,
             onUpdate = onUpdate,
             onPrevious = onPreviousForm,
-            onNext = onNextForm
+            onNext = onNextForm,
+            onGoHome = onGoHome
         )
         4 -> Form5AnomaliesScreen(
             delivery = delivery,
@@ -54,21 +59,24 @@ fun FormContainerScreen(
             onUpdateAnomaly = onUpdateAnomaly,
             onRemoveAnomaly = onRemoveAnomaly,
             onPrevious = onPreviousForm,
-            onNext = onNextForm
+            onNext = onNextForm,
+            onGoHome = onGoHome
         )
         5 -> Form6RemarquesScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form6_remarks,
             onUpdate = onUpdate,
             onPrevious = onPreviousForm,
-            onNext = onNextForm
+            onNext = onNextForm,
+            onGoHome = onGoHome
         )
         6 -> Form7TerminerScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form7_finish,
             onUpdate = onUpdate,
             onPrevious = onPreviousForm,
-            onFinish = onFinish
+            onFinish = onFinish,
+            onGoHome = onGoHome
         )
     }
 }

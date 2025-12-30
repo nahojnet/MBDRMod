@@ -76,8 +76,17 @@ class DeliveryViewModel @Inject constructor(
         _currentFormIndex.value = 0
     }
 
+    fun goHome() {
+        // Save as draft and return to home screen
+        saveDraft()
+        _isEditing.value = false
+        _currentFormIndex.value = 0
+    }
+
     fun updateDelivery(update: (DeliveryData) -> DeliveryData) {
         _currentDelivery.value = update(_currentDelivery.value)
+        // Save draft on every value change
+        saveDraft()
     }
 
     fun nextForm() {

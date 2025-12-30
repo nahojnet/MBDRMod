@@ -1,6 +1,8 @@
 package com.mbdrmod.delivery.ui.screens.forms
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ fun Form6RemarquesScreen(
     onUpdate: (DeliveryData) -> Unit,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
+    onGoHome: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showErrors by remember { mutableStateOf(false) }
@@ -35,6 +38,15 @@ fun Form6RemarquesScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Remarques") },
+                navigationIcon = {
+                    IconButton(onClick = onGoHome) {
+                        Icon(
+                            Icons.Default.Home,
+                            contentDescription = "Accueil",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary

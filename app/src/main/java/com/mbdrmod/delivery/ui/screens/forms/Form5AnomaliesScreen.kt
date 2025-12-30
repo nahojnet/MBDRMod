@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ fun Form5AnomaliesScreen(
     onRemoveAnomaly: (Long) -> Unit,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
+    onGoHome: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -39,6 +41,15 @@ fun Form5AnomaliesScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Anomalies") },
+                navigationIcon = {
+                    IconButton(onClick = onGoHome) {
+                        Icon(
+                            Icons.Default.Home,
+                            contentDescription = "Accueil",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
