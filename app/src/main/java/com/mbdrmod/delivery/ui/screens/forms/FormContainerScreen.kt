@@ -20,6 +20,13 @@ fun FormContainerScreen(
     onGoHome: () -> Unit
 ) {
     when (currentFormIndex) {
+        -1 -> SiteSelectionScreen(
+            deliverySites = config.deliverySites,
+            selectedSite = delivery.deliverySite,
+            onSiteSelected = { site -> onUpdate(delivery.copy(deliverySite = site)) },
+            onConfirm = onNextForm,
+            onGoHome = onGoHome
+        )
         0 -> Form1LivraisonScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form1_livraison,
@@ -51,7 +58,14 @@ fun FormContainerScreen(
             onNext = onNextForm,
             onGoHome = onGoHome
         )
-        4 -> Form5AnomaliesScreen(
+        4 -> FormSSCCScreen(
+            delivery = delivery,
+            onUpdate = onUpdate,
+            onPrevious = onPreviousForm,
+            onNext = onNextForm,
+            onGoHome = onGoHome
+        )
+        5 -> Form5AnomaliesScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form5_anomalies,
             onUpdate = onUpdate,
@@ -62,7 +76,7 @@ fun FormContainerScreen(
             onNext = onNextForm,
             onGoHome = onGoHome
         )
-        5 -> Form6RemarquesScreen(
+        6 -> Form6RemarquesScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form6_remarks,
             onUpdate = onUpdate,
@@ -70,7 +84,7 @@ fun FormContainerScreen(
             onNext = onNextForm,
             onGoHome = onGoHome
         )
-        6 -> Form7TerminerScreen(
+        7 -> Form7TerminerScreen(
             delivery = delivery,
             requiredFields = config.requiredFields.form7_finish,
             onUpdate = onUpdate,

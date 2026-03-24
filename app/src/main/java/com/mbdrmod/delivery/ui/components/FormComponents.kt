@@ -175,7 +175,8 @@ fun FormTimeField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     isRequired: Boolean = false,
-    isError: Boolean = false
+    isError: Boolean = false,
+    errorMessage: String = "Ce champ est obligatoire"
 ) {
     // Parse current value
     val parts = value.split(":")
@@ -289,7 +290,7 @@ fun FormTimeField(
 
         if (isError) {
             Text(
-                text = "Ce champ est obligatoire",
+                text = errorMessage,
                 color = Error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)

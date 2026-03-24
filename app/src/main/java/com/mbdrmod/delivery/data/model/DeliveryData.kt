@@ -56,6 +56,12 @@ data class DeliveryData(
     val cardboard: Int? = null,
     val aluminum: Int? = null,
 
+    // Site de livraison (sélectionné avant les formulaires)
+    val deliverySite: String = "",
+
+    // Form SSCC - Numéros de traçabilité des palettes
+    val ssccNumbers: String = "",
+
     // Form 5 - Anomalies (stored as JSON)
     val anomalies: List<Anomaly> = emptyList(),
 

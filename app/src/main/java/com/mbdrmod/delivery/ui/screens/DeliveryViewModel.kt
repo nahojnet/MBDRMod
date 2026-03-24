@@ -59,7 +59,7 @@ class DeliveryViewModel @Inject constructor(
 
     fun startNewDelivery() {
         _currentDelivery.value = createNewDelivery()
-        _currentFormIndex.value = 0
+        _currentFormIndex.value = -1 // Start at site selection screen
         _isEditing.value = true
     }
 
@@ -92,7 +92,7 @@ class DeliveryViewModel @Inject constructor(
     fun nextForm() {
         // Save draft when navigating between forms
         saveDraft()
-        if (_currentFormIndex.value < 6) { // 7 forms (0-6)
+        if (_currentFormIndex.value < 7) { // 8 forms (0-7) + site selection (-1)
             _currentFormIndex.value++
         }
     }
@@ -106,7 +106,7 @@ class DeliveryViewModel @Inject constructor(
     }
 
     fun goToForm(index: Int) {
-        if (index in 0..6) {
+        if (index in 0..7) {
             _currentFormIndex.value = index
         }
     }
@@ -136,7 +136,8 @@ class DeliveryViewModel @Inject constructor(
 
     // Check if delivery has any meaningful data
     private fun hasAnyData(delivery: DeliveryData): Boolean {
-        return delivery.clientNumber.isNotBlank() ||
+        return delivery.deliverySite.isNotBlank() ||
+                delivery.clientNumber.isNotBlank() ||
                 delivery.tourNumber != null ||
                 delivery.expectedArrivalTime.isNotBlank() ||
                 delivery.actualArrivalTime.isNotBlank() ||
@@ -149,6 +150,7 @@ class DeliveryViewModel @Inject constructor(
                 delivery.vehicleFreshTemp != null ||
                 delivery.productFrozenTemp != null ||
                 delivery.productFreshTemp != null ||
+                delivery.ssccNumbers.isNotBlank() ||
                 delivery.anomalies.isNotEmpty() ||
                 delivery.remarks.isNotBlank() ||
                 delivery.driverName.isNotBlank() ||
