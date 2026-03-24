@@ -6,10 +6,14 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
 import com.mbdrmod.delivery.data.model.DeliveryData
 import com.mbdrmod.delivery.ui.components.FormNavigationButtons
 import com.mbdrmod.delivery.ui.theme.TextSecondary
@@ -45,6 +49,8 @@ fun FormSSCCScreen(
     onGoHome: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     var textFieldValue by remember {
         mutableStateOf(TextFieldValue(delivery.ssccNumbers))
     }
@@ -124,17 +130,25 @@ fun FormSSCCScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .weight(1f)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            // Masque le clavier virtuel : la saisie se fait via scanner infrarouge
+                            keyboardController?.hide()
+                        }
+                    },
                 textStyle = LocalTextStyle.current.copy(
                     fontFamily = FontFamily.Monospace
                 ),
                 placeholder = {
                     Text(
-                        "Saisir les numéros SSCC...\n(18 caractères par ligne)",
+                        "Scanner les codes SSCC...\n(18 caractères par ligne)",
                         color = TextSecondary
                     )
                 },
                 label = { Text("Numéros SSCC") },
+                // Évite l'affichage du clavier virtuel tout en acceptant la saisie physique/scanner
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Null),
                 singleLine = false,
                 maxLines = Int.MAX_VALUE
             )
