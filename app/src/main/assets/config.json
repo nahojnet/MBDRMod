@@ -4,6 +4,13 @@
     "retryIntervalMinutes": 15,
     "dataRetentionDays": 30
   },
+  "deliverySites": [
+    "Entrepôt Paris Nord",
+    "Entrepôt Lyon Sud",
+    "Entrepôt Marseille",
+    "Entrepôt Bordeaux",
+    "Entrepôt Lille"
+  ],
   "requiredFields": {
     "form1_livraison": {
       "deliveryDate": true,

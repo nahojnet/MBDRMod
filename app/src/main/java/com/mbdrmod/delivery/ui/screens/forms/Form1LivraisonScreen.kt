@@ -39,11 +39,24 @@ fun Form1LivraisonScreen(
     fun isPackagesValid() = !requiredFields.packages || delivery.packages != null
     fun isVolumeValid() = !requiredFields.volumeM3 || delivery.volumeM3 != null
 
+    // Chronological order validations (only when both fields are filled)
+    fun isActualArrivalAfterExpected(): Boolean {
+        val expected = delivery.expectedArrivalTime
+        val actual = delivery.actualArrivalTime
+        return expected.isBlank() || actual.isBlank() || actual >= expected
+    }
+    fun isDeliveryStartAfterActualArrival(): Boolean {
+        val actual = delivery.actualArrivalTime
+        val start = delivery.deliveryStartTime
+        return actual.isBlank() || start.isBlank() || start >= actual
+    }
+
     fun validateAndProceed() {
         showErrors = true
         if (isDateValid() && isClientNumberValid() && isTourNumberValid() &&
             isExpectedArrivalValid() && isActualArrivalValid() && isDeliveryStartValid() &&
-            isSupportsValid() && isWeightValid() && isPackagesValid() && isVolumeValid()) {
+            isSupportsValid() && isWeightValid() && isPackagesValid() && isVolumeValid() &&
+            isActualArrivalAfterExpected() && isDeliveryStartAfterActualArrival()) {
             onNext()
         }
     }
@@ -144,7 +157,10 @@ fun Form1LivraisonScreen(
                         value = delivery.actualArrivalTime,
                         onValueChange = { onUpdate(delivery.copy(actualArrivalTime = it)) },
                         isRequired = requiredFields.actualArrivalTime,
-                        isError = showErrors && !isActualArrivalValid()
+                        isError = showErrors && (!isActualArrivalValid() || !isActualArrivalAfterExpected()),
+                        errorMessage = if (showErrors && !isActualArrivalAfterExpected())
+                            "L'heure d'arrivée réelle ne peut pas être avant l'heure prévue"
+                        else "Ce champ est obligatoire"
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -154,7 +170,10 @@ fun Form1LivraisonScreen(
                         value = delivery.deliveryStartTime,
                         onValueChange = { onUpdate(delivery.copy(deliveryStartTime = it)) },
                         isRequired = requiredFields.deliveryStartTime,
-                        isError = showErrors && !isDeliveryStartValid()
+                        isError = showErrors && (!isDeliveryStartValid() || !isDeliveryStartAfterActualArrival()),
+                        errorMessage = if (showErrors && !isDeliveryStartAfterActualArrival())
+                            "L'heure de début ne peut pas être avant l'heure d'arrivée"
+                        else "Ce champ est obligatoire"
                     )
                 }
             }

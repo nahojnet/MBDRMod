@@ -14,6 +14,9 @@ data class WebhookPayload(
 )
 
 data class DeliveryPayloadData(
+    @SerializedName("site_livraison")
+    val siteLivraison: String,
+
     @SerializedName("livraison")
     val livraison: LivraisonData,
 
@@ -25,6 +28,9 @@ data class DeliveryPayloadData(
 
     @SerializedName("collecte")
     val collecte: CollecteData,
+
+    @SerializedName("sscc")
+    val sscc: List<String>,
 
     @SerializedName("anomalies")
     val anomalies: List<AnomalyData>,
@@ -197,6 +203,7 @@ fun DeliveryData.toWebhookPayload(): WebhookPayload {
         id = this.id,
         timestamp = System.currentTimeMillis(),
         data = DeliveryPayloadData(
+            siteLivraison = this.deliverySite,
             livraison = LivraisonData(
                 client = ClientData(
                     dateLivraison = this.deliveryDate,
@@ -262,6 +269,10 @@ fun DeliveryData.toWebhookPayload(): WebhookPayload {
                 cartonsCollecte = this.cardboard,
                 aluminium = this.aluminum
             ),
+            sscc = this.ssccNumbers
+                .split("\n")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() },
             anomalies = this.anomalies.map { anomaly ->
                 AnomalyData(
                     wrin = anomaly.wrin,

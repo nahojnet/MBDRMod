@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.mbdrmod.delivery.data.local.DeliveryDao
 import com.mbdrmod.delivery.data.local.DeliveryDatabase
+import com.mbdrmod.delivery.data.local.DeliveryDatabase.Companion.MIGRATION_1_2
 import com.mbdrmod.delivery.data.remote.WebhookService
 import dagger.Module
 import dagger.Provides
@@ -28,7 +29,9 @@ object AppModule {
             context,
             DeliveryDatabase::class.java,
             "delivery_database"
-        ).build()
+        )
+            .addMigrations(MIGRATION_1_2)
+            .build()
     }
 
     @Provides

@@ -34,10 +34,23 @@ fun Form7TerminerScreen(
     fun isDriverNameValid() = !requiredFields.driverName || delivery.driverName.isNotBlank()
     fun isManagerNameValid() = !requiredFields.managerName || delivery.managerName.isNotBlank()
 
+    // Chronological order validations (only when both fields are filled)
+    fun isEndTimeAfterStartTime(): Boolean {
+        val start = delivery.deliveryStartTime
+        val end = delivery.deliveryEndTime
+        return start.isBlank() || end.isBlank() || end >= start
+    }
+    fun isDepartureAfterEndTime(): Boolean {
+        val end = delivery.deliveryEndTime
+        val departure = delivery.departureTime
+        return end.isBlank() || departure.isBlank() || departure >= end
+    }
+
     fun validateAndFinish() {
         showErrors = true
         if (isDeliveryEndTimeValid() && isDepartureTimeValid() &&
-            isDriverNameValid() && isManagerNameValid()) {
+            isDriverNameValid() && isManagerNameValid() &&
+            isEndTimeAfterStartTime() && isDepartureAfterEndTime()) {
             onFinish()
         }
     }
@@ -94,7 +107,10 @@ fun Form7TerminerScreen(
                         value = delivery.deliveryEndTime,
                         onValueChange = { onUpdate(delivery.copy(deliveryEndTime = it)) },
                         isRequired = requiredFields.deliveryEndTime,
-                        isError = showErrors && !isDeliveryEndTimeValid()
+                        isError = showErrors && (!isDeliveryEndTimeValid() || !isEndTimeAfterStartTime()),
+                        errorMessage = if (showErrors && !isEndTimeAfterStartTime())
+                            "L'heure de fin ne peut pas être avant l'heure de début de livraison (${delivery.deliveryStartTime})"
+                        else "Ce champ est obligatoire"
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -104,7 +120,10 @@ fun Form7TerminerScreen(
                         value = delivery.departureTime,
                         onValueChange = { onUpdate(delivery.copy(departureTime = it)) },
                         isRequired = requiredFields.departureTime,
-                        isError = showErrors && !isDepartureTimeValid()
+                        isError = showErrors && (!isDepartureTimeValid() || !isDepartureAfterEndTime()),
+                        errorMessage = if (showErrors && !isDepartureAfterEndTime())
+                            "L'heure de départ ne peut pas être avant l'heure de fin de livraison"
+                        else "Ce champ est obligatoire"
                     )
                 }
             }

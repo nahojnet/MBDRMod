@@ -2,7 +2,8 @@ package com.mbdrmod.delivery.data.model
 
 data class AppConfig(
     val webhook: WebhookConfig = WebhookConfig(),
-    val requiredFields: RequiredFieldsConfig = RequiredFieldsConfig()
+    val requiredFields: RequiredFieldsConfig = RequiredFieldsConfig(),
+    val deliverySites: List<String> = emptyList()
 )
 
 data class WebhookConfig(
