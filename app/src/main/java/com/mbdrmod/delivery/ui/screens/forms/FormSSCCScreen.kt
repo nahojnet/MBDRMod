@@ -10,10 +10,8 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.KeyboardOptions
 import com.mbdrmod.delivery.data.model.DeliveryData
 import com.mbdrmod.delivery.ui.components.FormNavigationButtons
 import com.mbdrmod.delivery.ui.theme.TextSecondary
@@ -147,8 +145,6 @@ fun FormSSCCScreen(
                     )
                 },
                 label = { Text("Numéros SSCC") },
-                // Évite l'affichage du clavier virtuel tout en acceptant la saisie physique/scanner
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Null),
                 singleLine = false,
                 maxLines = Int.MAX_VALUE
             )
